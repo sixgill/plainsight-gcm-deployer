@@ -3,12 +3,12 @@ FROM marketplace.gcr.io/google/debian10 AS build
 RUN apt-get update \
     && apt-get install -y --no-install-recommends gettext
 
-ADD nginx /tmp/chart
+ADD Plainsight /tmp/chart
 RUN cd /tmp \
-    && tar -czvf /tmp/nginx.tar.gz chart
-ADD apptest/deployer/nginx /tmp/test/chart
+    && tar -czvf /tmp/Plainsight.tar.gz chart
+ADD apptest/deployer/Plainsight /tmp/test/chart
 RUN cd /tmp/test \
-    && tar -czvf /tmp/test/nginx.tar.gz chart/
+    && tar -czvf /tmp/test/Plainsight.tar.gz chart/
 
 ADD schema.yaml /tmp/schema.yaml
 
@@ -22,7 +22,7 @@ RUN cat /tmp/schema.yaml \
 
 
 FROM gcr.io/cloud-marketplace-tools/k8s/deployer_helm
-COPY --from=build /tmp/nginx.tar.gz /data/chart/
-COPY --from=build /tmp/test/nginx.tar.gz /data-test/chart/
+COPY --from=build /tmp/Plainsight.tar.gz /data/chart/
+COPY --from=build /tmp/test/Plainsight.tar.gz /data-test/chart/
 COPY apptest/deployer/schema.yaml /data-test/
 COPY --from=build /tmp/schema.yaml /data/

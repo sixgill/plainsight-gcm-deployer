@@ -1,7 +1,7 @@
 {{/*
 Expand the name of the chart.
 */}}
-{{- define "Plainsight.name" -}}
+{{- define "migrator.name" -}}
 {{- default .Chart.Name .Values.nameOverride | trunc 63 | trimSuffix "-" }}
 {{- end }}
 
@@ -10,7 +10,7 @@ Create a default fully qualified app name.
 We truncate at 63 chars because some Kubernetes name fields are limited to this (by the DNS naming spec).
 If release name contains chart name it will be used as a full name.
 */}}
-{{- define "Plainsight.fullname" -}}
+{{- define "migrator.fullname" -}}
 {{- if .Values.fullnameOverride }}
 {{- .Values.fullnameOverride | trunc 63 | trimSuffix "-" }}
 {{- else }}
@@ -26,16 +26,16 @@ If release name contains chart name it will be used as a full name.
 {{/*
 Create chart name and version as used by the chart label.
 */}}
-{{- define "Plainsight.chart" -}}
+{{- define "migrator.chart" -}}
 {{- printf "%s-%s" .Chart.Name .Chart.Version | replace "+" "_" | trunc 63 | trimSuffix "-" }}
 {{- end }}
 
 {{/*
 Common labels
 */}}
-{{- define "Plainsight.labels" -}}
-helm.sh/chart: {{ include "Plainsight.chart" . }}
-{{ include "Plainsight.selectorLabels" . }}
+{{- define "migrator.labels" -}}
+helm.sh/chart: {{ include "migrator.chart" . }}
+{{ include "migrator.selectorLabels" . }}
 {{- if .Chart.AppVersion }}
 app.kubernetes.io/version: {{ .Chart.AppVersion | quote }}
 {{- end }}
@@ -45,27 +45,18 @@ app.kubernetes.io/managed-by: {{ .Release.Service }}
 {{/*
 Selector labels
 */}}
-{{- define "Plainsight.selectorLabels" -}}
-app.kubernetes.io/name: {{ include "Plainsight.name" . }}
+{{- define "migrator.selectorLabels" -}}
+app.kubernetes.io/name: {{ include "migrator.name" . }}
 app.kubernetes.io/instance: {{ .Release.Name }}
 {{- end }}
 
 {{/*
 Create the name of the service account to use
 */}}
-{{- define "Plainsight.serviceAccountName" -}}
+{{- define "migrator.serviceAccountName" -}}
 {{- if .Values.serviceAccount.create }}
-{{- default (include "Plainsight.fullname" .) .Values.serviceAccount.name }}
+{{- default (include "migrator.fullname" .) .Values.serviceAccount.name }}
 {{- else }}
 {{- default "default" .Values.serviceAccount.name }}
-{{- end }}
-{{- end }}
-
-{{/*
-Create the necessary SQL_URL to use
-*/}}
-{{- define "Plainsight.sqlurl" -}}
-{{- with .Values.database }}
-{{ printf "host=%s port=%.0f user=%s pass=%s dbname=%s sslmode=%s" .hostname .port .username .password .databaseName .sslMode }}
 {{- end }}
 {{- end }}
