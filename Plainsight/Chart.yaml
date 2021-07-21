@@ -5,21 +5,6 @@ type: application
 version: 1.0.0
 appVersion: "v1.0.0"
 dependencies:
-  - name: cert-manager
-    version: "v1.3.1"
-    repository: file://charts/cert-manager
-  - name: ingress-nginx
-    version: "0.46.0"
-    repository: file://charts/ingress-nginx
-  - name: minio-operator
-    version: "4.1.7"
-    repository: file://charts/minio-operator
-  - name: postgresql
-    version: "10.5.2"
-    repository: file://charts/postgresql
-  - name: redis
-    version: "16.6.6"
-    repository: file://charts/redis
   - name: migrator
     version: "1.0.0"
     repository: file://charts/migrator

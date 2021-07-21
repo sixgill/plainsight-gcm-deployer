@@ -1,0 +1,58 @@
+x-google-marketplace:
+  schemaVersion: v2
+
+  applicationApiVersion: v1beta1
+
+  publishedVersion: "$TAG"
+  publishedVersionMetadata:
+    releaseNote: >-
+      Initial Release
+    releaseTypes:
+    - Feature
+    recommended: true
+
+  images:
+    '':
+      properties:
+        imageRepo:
+          type: REPO_WITH_REGISTRY
+        imageTag:
+          type: TAG
+    worker:
+      properties:
+        worker.image.repo:
+          type: REPO_WITH_REGISTRY
+        worker.image.tag:
+          type: TAG
+    api:
+      properties:
+        api.image.repo:
+          type: REPO_WITH_REGISTRY
+        api.image.tag:
+          type: TAG
+    dashboard:
+      properties:
+        dashboard.image.repo:
+          type: REPO_WITH_REGISTRY
+        dashboard.image.tag:
+          type: TAG
+    billing:
+      properties:
+        billing.image.repo:
+          type: REPO_WITH_REGISTRY
+        billing.image.tag:
+          type: TAG
+
+properties:
+  name:
+    type: string
+    x-google-marketplace:
+      type: NAME
+  namespace:
+    type: string
+    x-google-marketplace:
+      type: NAMESPACE
+
+required:
+- name
+- namespace

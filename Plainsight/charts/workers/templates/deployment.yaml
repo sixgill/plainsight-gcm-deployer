@@ -67,6 +67,9 @@ spec:
             timeoutSeconds: 1
           resources:
             {{- toYaml .resources | nindent 12 }}
+          env:
+          - name: SENSE_PLEASE_DONT_DIE
+            value: "true"
           envFrom:
           - configMapRef:
               name: workers
