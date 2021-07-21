@@ -1,5 +1,8 @@
 FROM marketplace.gcr.io/google/debian10 AS build
 
+RUN mkdir /licenses
+ADD docs/* /licenses
+
 RUN apt-get update \
     && apt-get install -y --no-install-recommends gettext
 

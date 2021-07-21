@@ -1,0 +1,62 @@
+gcp:
+  project: "myProject"
+  region: "my-region1"
+  zone: "my-region1-a"
+
+storage:
+  blob:
+    name: plainsight-blobs
+    type: gcs
+  download:
+    name: plainsight-downloads
+    type: gcs
+  upload:
+    name: plainsight-uploads
+    type: gcs
+  credentials:
+    containerLocalPath: /etc/credentials/sa/storage/service-account.json
+    jsonKey: |-
+      ...
+
+workers:
+  pubsubType: redis
+  numWorkers: 5
+  expirationDays: 7
+  status:
+    credentials:
+      containerLocalPath: "shebang"
+      jsonKey: |-
+        ...
+  training:
+    imageURI: "myimage"
+    webhookEndpoint: "mywebhook"
+    credentials:
+      containerLocalPath: "shebang"
+      jsonKey: |-
+        ...
+  smartml:
+    maxWidth: 500
+    credentials:
+      containerLocalPath: "shebang"
+      jsonKey: |-
+        ...
+
+redis:
+  address: "10.128.219.67:6379"
+
+database:
+  dialect: postgres
+  hostname: "localhost"
+  port: 5432
+  username: "admin"
+  password: "admin"
+  databaseName: "plainsight"
+  sslMode: require
+
+email:
+  senderType: smtp
+  hostname: "localhost"
+  port: 25
+  username: "admin"
+  password: "admin"
+  sendAs: "admin@localhost"

@@ -1,0 +1,235 @@
+# Default values for workers.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+
+replicaCount: 1
+
+image:
+  repository: nginx
+  pullPolicy: IfNotPresent
+  # Overrides the image tag whose default is the chart appVersion.
+  tag: ""
+
+imagePullSecrets: []
+
+workers:
+  - nameOverride: clip-worker
+    fullnameOverride: clip-worker
+    pubsubTopic: clip
+    serviceAccount:
+      create: true
+      annotations: {}
+      name: clip-worker
+    podAnnotations: {}
+    podSecurityContext: {}
+    securityContext: {}
+    resources:
+      requests:
+        cpu: 200m
+        memory: 250mi
+      limits:
+        cpu: 500m
+        memory: 1Gi
+    nodeSelector: {}
+    tolerations: []
+    affinity: {}
+  - nameOverride: export-dataset-version-worker
+    fullnameOverride: export-dataset-version-worker
+    pubsubTopic: export-dataset-version
+    serviceAccount:
+      create: true
+      annotations: {}
+      name: export-dataset-version-worker
+    podAnnotations: {}
+    podSecurityContext: {}
+    securityContext: {}
+    resources:
+      requests:
+        cpu: 200m
+        memory: 250mi
+      limits:
+        cpu: 500m
+        memory: 1Gi
+    nodeSelector: {}
+    tolerations: []
+    affinity: {}
+  - nameOverride: frame-worker
+    fullnameOverride: frame-worker
+    pubsubTopic: frame
+    serviceAccount:
+      create: true
+      annotations: {}
+      name: frame-worker
+    podAnnotations: {}
+    podSecurityContext: {}
+    securityContext: {}
+    resources:
+      requests:
+        cpu: 200m
+        memory: 250mi
+      limits:
+        cpu: 500m
+        memory: 1Gi
+    nodeSelector: {}
+    tolerations: []
+    affinity: {}
+  - nameOverride: migrate-worker
+    fullnameOverride: migrate-worker
+    pubsubTopic: migrate
+    serviceAccount:
+      create: true
+      annotations: {}
+      name: migrate-worker
+    podAnnotations: {}
+    podSecurityContext: {}
+    securityContext: {}
+    resources:
+      requests:
+        cpu: 200m
+        memory: 250mi
+      limits:
+        cpu: 500m
+        memory: 1Gi
+    nodeSelector: {}
+    tolerations: []
+    affinity: {}
+  - nameOverride: model-deployment-status-worker
+    fullnameOverride: model-deployment-status-worker
+    pubsubTopic: model-deployment-status
+    serviceAccount:
+      create: true
+      annotations: {}
+      name: model-deployment-status-worker
+    podAnnotations: {}
+    podSecurityContext: {}
+    securityContext: {}
+    resources:
+      requests:
+        cpu: 200m
+        memory: 250mi
+      limits:
+        cpu: 500m
+        memory: 1Gi
+    nodeSelector: {}
+    tolerations: []
+    affinity: {}
+  - nameOverride: model-restart-worker
+    fullnameOverride: model-restart-worker
+    pubsubTopic: model-restart
+    serviceAccount:
+      create: true
+      annotations: {}
+      name: model-restart-worker
+    podAnnotations: {}
+    podSecurityContext: {}
+    securityContext: {}
+    resources:
+      requests:
+        cpu: 200m
+        memory: 250mi
+      limits:
+        cpu: 500m
+        memory: 1Gi
+    nodeSelector: {}
+    tolerations: []
+    affinity: {}
+  - nameOverride: sync-worker
+    fullnameOverride: sync-worker
+    pubsubTopic: sync
+    serviceAccount:
+      create: true
+      annotations: {}
+      name: sync-worker
+    podAnnotations: {}
+    podSecurityContext: {}
+    securityContext: {}
+    resources:
+      requests:
+        cpu: 200m
+        memory: 250mi
+      limits:
+        cpu: 500m
+        memory: 1Gi
+    nodeSelector: {}
+    tolerations: []
+    affinity: {}
+  - nameOverride: train-worker
+    fullnameOverride: train-worker
+    pubsubTopic: train
+    serviceAccount:
+      create: true
+      annotations: {}
+      name: train-worker
+    podAnnotations: {}
+    podSecurityContext: {}
+    securityContext: {}
+    resources:
+      requests:
+        cpu: 200m
+        memory: 250mi
+      limits:
+        cpu: 500m
+        memory: 1Gi
+    nodeSelector: {}
+    tolerations: []
+    affinity: {}
+  - nameOverride: upload-worker
+    fullnameOverride: upload-worker
+    pubsubTopic: upload
+    serviceAccount:
+      create: true
+      annotations: {}
+      name: upload-worker
+    podAnnotations: {}
+    podSecurityContext: {}
+    securityContext: {}
+    resources:
+      requests:
+        cpu: 200m
+        memory: 250mi
+      limits:
+        cpu: 500m
+        memory: 1Gi
+    nodeSelector: {}
+    tolerations: []
+    affinity: {}
+  - nameOverride: url-upload-worker
+    fullnameOverride: url-upload-worker
+    pubsubTopic: url-upload
+    serviceAccount:
+      create: true
+      annotations: {}
+      name: url-upload-worker
+    podAnnotations: {}
+    podSecurityContext: {}
+    securityContext: {}
+    resources:
+      requests:
+        cpu: 200m
+        memory: 250mi
+      limits:
+        cpu: 500m
+        memory: 1Gi
+    nodeSelector: {}
+    tolerations: []
+    affinity: {}
+  - nameOverride: vertex-ai-deployer-worker
+    fullnameOverride: vertex-ai-deployer-worker
+    pubsubTopic: vertex-ai-deployer
+    serviceAccount:
+      create: true
+      annotations: {}
+      name: vertex-ai-deployer-worker
+    podAnnotations: {}
+    podSecurityContext: {}
+    securityContext: {}
+    resources:
+      requests:
+        cpu: 200m
+        memory: 250mi
+      limits:
+        cpu: 500m
+        memory: 1Gi
+    nodeSelector: {}
+    tolerations: []
+    affinity: {}
