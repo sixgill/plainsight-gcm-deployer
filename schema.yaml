@@ -3,7 +3,7 @@ x-google-marketplace:
 
   applicationApiVersion: v1beta1
 
-  publishedVersion: "$TAG"
+  publishedVersion: "1.0.0"
   publishedVersionMetadata:
     releaseNote: >-
       Initial Release
@@ -12,17 +12,11 @@ x-google-marketplace:
     recommended: true
 
   images:
-    '':
-      properties:
-        imageRepo:
-          type: REPO_WITH_REGISTRY
-        imageTag:
-          type: TAG
     worker:
       properties:
-        worker.image.repo:
+        workers.image.repo:
           type: REPO_WITH_REGISTRY
-        worker.image.tag:
+        workers.image.tag:
           type: TAG
     api:
       properties:
@@ -41,6 +35,12 @@ x-google-marketplace:
         billing.image.repo:
           type: REPO_WITH_REGISTRY
         billing.image.tag:
+          type: TAG
+    migrator:
+      properties:
+        migrator.image.repo:
+          type: REPO_WITH_REGISTRY
+        migrator.image.tag:
           type: TAG
 
 properties:
