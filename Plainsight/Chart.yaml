@@ -17,3 +17,6 @@ dependencies:
   - name: workers
     version: "1.0.0"
     repository: file://charts/workers
+  - name: billing
+    version: "1.0.0"
+    repository: file://charts/billing
