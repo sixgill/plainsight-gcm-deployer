@@ -20,11 +20,9 @@ spec:
       containers:
       - command:
           - /bin/migrator
-        envFrom:
-        - configMapRef:
-            name: api
-        - secretRef:
-            name: sense-secret
+        env:
+          - name: SENSE_PLEASE_DONT_DIE
+            value: "true"
         image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
         imagePullPolicy: {{ .Values.image.pullPolicy }}
         name: {{ .Chart.Name }}
