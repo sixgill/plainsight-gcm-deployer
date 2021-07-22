@@ -1,3 +1,4 @@
+{{- if not .Values.gcp.validate }}
 {{- $gcpProject := .Values.gcp.project -}}
 {{- $gcpRegion := .Values.gcp.region -}}
 ---
@@ -44,3 +45,10 @@ data:
   TRAINING_REGION: {{ $gcpRegion | quote }}
   TRAINING_WEBHOOK_ENDPOINT: {{ .webhookEndpoint | quote }}
   {{- end }}
+{{- else }}
+---
+apiVersion: v1
+kind: ConfigMap
+data:
+  IM_HERE: "true"
+{{- end }}

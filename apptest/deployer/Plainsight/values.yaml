@@ -2,6 +2,7 @@ gcp:
   project: "myProject"
   region: "my-region1"
   zone: "my-region1-a"
+  validate: true
 
 storage:
   blob:

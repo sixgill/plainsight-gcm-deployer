@@ -1,0 +1,2 @@
+apiVersion: batch.k8s.io
+kind: Job
