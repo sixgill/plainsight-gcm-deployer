@@ -1,7 +1,7 @@
 FROM marketplace.gcr.io/google/debian10 AS build
 
-RUN mkdir /licenses
-ADD docs/* /licenses
+RUN mkdir /third-party
+ADD docs/* /third-party
 
 RUN apt-get update \
     && apt-get install -y --no-install-recommends gettext
@@ -23,9 +23,10 @@ RUN cat /tmp/schema.yaml \
     > /tmp/schema.yaml.new \
     && mv /tmp/schema.yaml.new /tmp/schema.yaml
 
+ENTRYPOINT [ "/bin/bash" ]
 
-FROM gcr.io/cloud-marketplace-tools/k8s/deployer_helm
-COPY --from=build /tmp/Plainsight.tar.gz /data/chart/
-COPY --from=build /tmp/test/Plainsight.tar.gz /data-test/chart/
-COPY apptest/deployer/schema.yaml /data-test/
-COPY --from=build /tmp/schema.yaml /data/
+#FROM gcr.io/cloud-marketplace-tools/k8s/deployer_helm
+#COPY --from=build /tmp/Plainsight.tar.gz /data/chart/
+#COPY --from=build /tmp/test/Plainsight.tar.gz /data-test/chart/
+#COPY apptest/deployer/schema.yaml /data-test/
+#COPY --from=build /tmp/schema.yaml /data/

@@ -1,0 +1,178 @@
+syntax = "proto3";
+
+import "google/protobuf/timestamp.proto";
+
+
+package buffs;
+option go_package = "github.com/sixgill/sense-deployment-api/pkg/buffs";
+
+
+// ----------- Health Check Data, Req/Res Types and Service Contract ------------
+
+message HealthCheckRequest {
+  string service = 1;
+}
+
+enum ServingStatus {
+  UNKNOWN = 0;
+  SERVING = 1;
+  NOT_SERVING = 2;
+  SERVICE_UNKNOWN = 3;  // Used only by the Watch method.
+}
+
+message HealthCheckResponse {
+  ServingStatus status = 1;
+}
+
+service Health {
+  rpc Check(HealthCheckRequest) returns (HealthCheckResponse);
+  rpc Watch(HealthCheckRequest) returns (stream HealthCheckResponse);
+}
+
+
+// ----------- ProtoBuff Data Types (our domain models) ------------
+
+message Tenant {
+  int64 id = 1;
+  string account = 2;
+  string name = 3;
+  string address = 4;
+  string website = 5;
+  string emailAddress = 6;
+  string phone = 7;
+  string customerID = 8;
+  google.protobuf.Timestamp createdAt = 9;
+  google.protobuf.Timestamp updatedAt = 10;
+}
+
+
+message Deployment {
+  int64 id = 1;
+  int64 tenantId = 2;
+  enum Cloud {
+    CLOUD_UNKNOWN = 0;
+    GCP = 1;
+    AWS = 2;
+    AZURE = 3;
+    PRIVATE = 4;
+  }
+  Cloud cloud = 3;
+  enum Status {
+    STATUS_UNKNOWN = 0;
+    SCHEDULED = 1;
+    RUNNING = 2;
+    COMPLETED = 3;
+    FAILED = 4;
+  }
+  Status status = 4;
+  google.protobuf.Timestamp createdAt = 5;
+  google.protobuf.Timestamp updatedAt = 6;
+}
+
+message Entitlement {
+  int64 id = 1;
+  int64 tenantId = 2;
+  string name = 3;
+  string usageReportingId = 4;
+  string marketplace = 5;
+  string offerId = 6;
+  string productId = 7;
+  string plan = 8;
+  enum StatusType {
+      ENTITLEMENT_UNKNOWN = 0;
+      ENTITLEMENT_ACTIVE = 1;
+      ENTITLEMENT_CANCELLED = 2;
+  }
+  StatusType state = 9;
+  google.protobuf.Timestamp createdAt = 10;
+  google.protobuf.Timestamp updatedAt = 11;
+}
+
+message TenantEvent {
+  int64 id = 1;
+  int64 tenantId = 2;
+  enum EventType {
+    ORDER_UNKNOWN = 0;
+    ORDER_CREATED = 1;
+    ORDER_MODIFIED = 2;
+    ORDER_CANCELLED = 3;
+  }
+  EventType eventType = 3;
+  bytes payload = 4;
+}
+
+
+// ----------- ProtoBuff Request Response Types (TCP Wire Types) -----------
+// ------- Offer Types ---------------
+message SaveOfferRes {
+  Tenant tenant = 1;
+  repeated Entitlement entitlements = 2;
+}
+
+message SaveOfferReq {
+  Tenant tenant = 1;
+  repeated Entitlement entitlements = 2;
+  TenantEvent event = 3;
+}
+
+message CreateDeploymentReq {
+  Deployment deployment = 1;
+}
+
+message CreateDeploymentRes {
+  Deployment deployment = 1;
+}
+
+message ReadDeploymentReq {
+  Deployment deployment = 1;
+}
+
+message ReadDeploymentRes {
+  repeated Deployment deployments = 1;
+}
+
+message ReadTenantReq {
+  Tenant tenant = 1;
+}
+
+message ReadTenantRes {
+  repeated Tenant tenants = 1;
+}
+
+message ReadEntitlementReq {
+  Entitlement entitlement = 1;
+}
+
+message ReadEntitlementsRes {
+  repeated Entitlement entitlements = 1;
+}
+
+message PingReq {
+  string msg = 1;
+}
+
+message PingRes {
+  string msg = 1;
+}
+
+message ActiveEntitlementReq {
+  string cloud = 1;
+  string customer_id = 2;
+  string product_id = 3;
+}
+
+message ActiveEntitlementRes {
+  Entitlement entitlement = 1;
+}
+
+
+// ----------- ProtoBuff Service Contract (the interface) ------------
+service ManagementAPI {
+  rpc SaveOffer(SaveOfferReq) returns (SaveOfferRes);
+  rpc CreateDeployment(CreateDeploymentReq) returns (CreateDeploymentRes);
+  rpc ReadDeployments(ReadDeploymentReq) returns (ReadDeploymentRes);
+  rpc ReadTenants(ReadTenantReq) returns (ReadTenantRes);
+  rpc ReadEntitlements(ReadEntitlementReq) returns (ReadEntitlementsRes);
+  rpc Ping(PingReq) returns (PingRes);
+  rpc ActiveEntitlement(ActiveEntitlementReq) returns (ActiveEntitlementRes);
+}
