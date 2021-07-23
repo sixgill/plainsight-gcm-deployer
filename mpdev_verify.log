@@ -1,0 +1,3613 @@
+INFO Parameters: {
+  "name": "apptest-5bldoukc",
+  "namespace": "apptest-5bldoukc"
+}
+INFO Creates namespace "apptest-5bldoukc"
+Using /opt/kubectl/1.18/kubectl (server=1.19)
+namespace/apptest-5bldoukc created
+INFO Initializes the deployer container which will deploy all the application components
+INFO: /data/schema.yaml:
+x-google-marketplace:
+  schemaVersion: v2
+
+  applicationApiVersion: v1beta1
+
+  publishedVersion: "1.0.0"
+  publishedVersionMetadata:
+    releaseNote: >-
+      Initial Release
+    releaseTypes:
+    - Feature
+    recommended: true
+
+  images:
+    worker:
+      properties:
+        workers.image.repository:
+          type: REPO_WITH_REGISTRY
+        workers.image.tag:
+          type: TAG
+    api:
+      properties:
+        api.image.repository:
+          type: REPO_WITH_REGISTRY
+        api.image.tag:
+          type: TAG
+    dashboard:
+      properties:
+        dashboard.image.repository:
+          type: REPO_WITH_REGISTRY
+        dashboard.image.tag:
+          type: TAG
+    billing:
+      properties:
+        billing.image.repository:
+          type: REPO_WITH_REGISTRY
+        billing.image.tag:
+          type: TAG
+    migrator:
+      properties:
+        migrator.image.repository:
+          type: REPO_WITH_REGISTRY
+        migrator.image.tag:
+          type: TAG
+
+properties:
+  name:
+    type: string
+    x-google-marketplace:
+      type: NAME
+  namespace:
+    type: string
+    x-google-marketplace:
+      type: NAMESPACE
+  gcp.project:
+    type: string
+    default: "myProject"
+  gcp.region:
+    type: string
+    default: "my-region1"
+  gcp.zone:
+    type: string
+    default: "my-region1-a"
+  gcp.verify:
+    type: boolean
+    default: true
+
+required:
+- name
+- namespaceUsing /opt/kubectl/1.18/kubectl (server=1.19)
+Using /opt/kubectl/1.18/kubectl (server=1.19)
+application.app.k8s.io/apptest-5bldoukc created
+Using /opt/kubectl/1.18/kubectl (server=1.19)
+Using /opt/kubectl/1.18/kubectl (server=1.19)
+serviceaccount/apptest-5bldoukc-deployer-sa created
+Using /opt/kubectl/1.18/kubectl (server=1.19)
+INFO Application 'apptest-5bldoukc' owns 'ServiceAccount/apptest-5bldoukc-deployer-sa'
+INFO Application 'apptest-5bldoukc' owns 'Secret/apptest-5bldoukc-deployer-config'
+INFO Application 'apptest-5bldoukc' owns 'Job/apptest-5bldoukc-deployer'
+INFO Application 'apptest-5bldoukc' owns 'RoleBinding/apptest-5bldoukc-deployer-rb'
+INFO: Applying the following manifests:
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  labels:
+    app.kubernetes.io/component: deployer.marketplace.cloud.google.com
+    app.kubernetes.io/name: apptest-5bldoukc
+    marketplace.cloud.google.com/deployer: Dependent
+  name: apptest-5bldoukc-deployer-sa
+  namespace: apptest-5bldoukc
+  ownerReferences:
+  - apiVersion: app.k8s.io/v1beta1
+    blockOwnerDeletion: true
+    kind: Application
+    name: apptest-5bldoukc
+    uid: dbf10b50-bff4-4a93-ab27-d579ddd52c8d
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  labels:
+    app.kubernetes.io/component: deployer.marketplace.cloud.google.com
+    app.kubernetes.io/name: apptest-5bldoukc
+    marketplace.cloud.google.com/deployer: Dependent
+  name: apptest-5bldoukc-deployer-config
+  namespace: apptest-5bldoukc
+  ownerReferences:
+  - apiVersion: app.k8s.io/v1beta1
+    blockOwnerDeletion: true
+    kind: Application
+    name: apptest-5bldoukc
+    uid: dbf10b50-bff4-4a93-ab27-d579ddd52c8d
+stringData:
+  values.yaml: '__image_repo_prefix__: gcr.io/plainsight-public/images
+
+    name: apptest-5bldoukc
+
+    namespace: apptest-5bldoukc
+
+    '
+type: Opaque
+---
+apiVersion: batch/v1
+kind: Job
+metadata:
+  labels:
+    app.kubernetes.io/component: deployer.marketplace.cloud.google.com
+    app.kubernetes.io/name: apptest-5bldoukc
+    marketplace.cloud.google.com/deployer: Main
+  name: apptest-5bldoukc-deployer
+  namespace: apptest-5bldoukc
+  ownerReferences:
+  - apiVersion: app.k8s.io/v1beta1
+    blockOwnerDeletion: true
+    kind: Application
+    name: apptest-5bldoukc
+    uid: dbf10b50-bff4-4a93-ab27-d579ddd52c8d
+spec:
+  backoffLimit: 0
+  template:
+    metadata:
+      annotations:
+        sidecar.istio.io/inject: 'false'
+    spec:
+      containers:
+      - command:
+        - /bin/deploy_with_tests.sh
+        image: gcr.io/plainsight-public/images/deployer:1.0
+        imagePullPolicy: Always
+        name: deployer
+        resources:
+          requests:
+            cpu: 100m
+            memory: 100Mi
+        volumeMounts:
+        - mountPath: /data/values.yaml
+          name: config-volume
+          readOnly: true
+          subPath: values.yaml
+      restartPolicy: Never
+      serviceAccountName: apptest-5bldoukc-deployer-sa
+      volumes:
+      - name: config-volume
+        secret:
+          secretName: apptest-5bldoukc-deployer-config
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  labels:
+    app.kubernetes.io/component: deployer-rbac.marketplace.cloud.google.com
+    app.kubernetes.io/name: apptest-5bldoukc
+    marketplace.cloud.google.com/deployer: Dependent
+  name: apptest-5bldoukc-deployer-rb
+  namespace: apptest-5bldoukc
+  ownerReferences:
+  - apiVersion: app.k8s.io/v1beta1
+    blockOwnerDeletion: true
+    kind: Application
+    name: apptest-5bldoukc
+    uid: dbf10b50-bff4-4a93-ab27-d579ddd52c8d
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: cluster-admin
+subjects:
+- kind: ServiceAccount
+  name: apptest-5bldoukc-deployer-sa
+  namespace: apptest-5bldoukc
+Using /opt/kubectl/1.18/kubectl (server=1.19)
+serviceaccount/apptest-5bldoukc-deployer-sa configured
+secret/apptest-5bldoukc-deployer-config created
+job.batch/apptest-5bldoukc-deployer created
+rolebinding.rbac.authorization.k8s.io/apptest-5bldoukc-deployer-rb created
+INFO wait for the deployer to succeed
+Using /opt/kubectl/1.18/kubectl (server=1.19)
+Elapsed 0sUsing /opt/kubectl/1.18/kubectl (server=1.19)
+Elapsed 4sUsing /opt/kubectl/1.18/kubectl (server=1.19)
+ERROR Deployer failed
+INFO cleaning all resources.
+INFO Collecting events for namespace "apptest-5bldoukc"
+Using /opt/kubectl/1.18/kubectl (server=1.19)
+LAST SEEN   TYPE      REASON                 OBJECT                                            MESSAGE
+4s          Normal    Scheduled              pod/apptest-5bldoukc-api-6844947664-b2lgh         Successfully assigned apptest-5bldoukc/apptest-5bldoukc-api-6844947664-b2lgh to gke-marketplace-dev-default-pool-f6e7d67a-mt1z
+2s          Normal    Pulled                 pod/apptest-5bldoukc-api-6844947664-b2lgh         Container image "gcr.io/plainsight-public/images/api:1.0.0" already present on machine
+2s          Normal    Created                pod/apptest-5bldoukc-api-6844947664-b2lgh         Created container api
+1s          Normal    Started                pod/apptest-5bldoukc-api-6844947664-b2lgh         Started container api
+4s          Normal    SuccessfulCreate       replicaset/apptest-5bldoukc-api-6844947664        Created pod: apptest-5bldoukc-api-6844947664-b2lgh
+4s          Normal    ScalingReplicaSet      deployment/apptest-5bldoukc-api                   Scaled up replica set apptest-5bldoukc-api-6844947664 to 1
+4s          Normal    Scheduled              pod/apptest-5bldoukc-billing-74c68f4cff-2ghsb     Successfully assigned apptest-5bldoukc/apptest-5bldoukc-billing-74c68f4cff-2ghsb to gke-marketplace-dev-default-pool-f6e7d67a-mt1z
+1s          Normal    Pulled                 pod/apptest-5bldoukc-billing-74c68f4cff-2ghsb     Container image "gcr.io/plainsight-public/images/billing:1.0.0" already present on machine
+1s          Normal    Created                pod/apptest-5bldoukc-billing-74c68f4cff-2ghsb     Created container billing
+1s          Normal    Started                pod/apptest-5bldoukc-billing-74c68f4cff-2ghsb     Started container billing
+4s          Normal    SuccessfulCreate       replicaset/apptest-5bldoukc-billing-74c68f4cff    Created pod: apptest-5bldoukc-billing-74c68f4cff-2ghsb
+4s          Normal    ScalingReplicaSet      deployment/apptest-5bldoukc-billing               Scaled up replica set apptest-5bldoukc-billing-74c68f4cff to 1
+4s          Normal    Scheduled              pod/apptest-5bldoukc-dashboard-64c969b98-4bxxk    Successfully assigned apptest-5bldoukc/apptest-5bldoukc-dashboard-64c969b98-4bxxk to gke-marketplace-dev-default-pool-f6e7d67a-mt1z
+2s          Normal    Pulled                 pod/apptest-5bldoukc-dashboard-64c969b98-4bxxk    Container image "gcr.io/plainsight-public/images/dashboard:1.0.0" already present on machine
+1s          Normal    Created                pod/apptest-5bldoukc-dashboard-64c969b98-4bxxk    Created container dashboard
+1s          Normal    Started                pod/apptest-5bldoukc-dashboard-64c969b98-4bxxk    Started container dashboard
+4s          Normal    SuccessfulCreate       replicaset/apptest-5bldoukc-dashboard-64c969b98   Created pod: apptest-5bldoukc-dashboard-64c969b98-4bxxk
+4s          Normal    ScalingReplicaSet      deployment/apptest-5bldoukc-dashboard             Scaled up replica set apptest-5bldoukc-dashboard-64c969b98 to 1
+9s          Normal    Scheduled              pod/apptest-5bldoukc-deployer-w8jc9               Successfully assigned apptest-5bldoukc/apptest-5bldoukc-deployer-w8jc9 to gke-marketplace-dev-default-pool-f6e7d67a-mt1z
+9s          Normal    Pulling                pod/apptest-5bldoukc-deployer-w8jc9               Pulling image "gcr.io/plainsight-public/images/deployer:1.0"
+8s          Normal    Pulled                 pod/apptest-5bldoukc-deployer-w8jc9               Successfully pulled image "gcr.io/plainsight-public/images/deployer:1.0" in 123.95424ms
+8s          Normal    Created                pod/apptest-5bldoukc-deployer-w8jc9               Created container deployer
+8s          Normal    Started                pod/apptest-5bldoukc-deployer-w8jc9               Started container deployer
+9s          Normal    SuccessfulCreate       job/apptest-5bldoukc-deployer                     Created pod: apptest-5bldoukc-deployer-w8jc9
+2s          Warning   BackoffLimitExceeded   job/apptest-5bldoukc-deployer                     Job has reached the specified backoff limit
+3s          Normal    Scheduled              pod/apptest-5bldoukc-migrator-ckqhk               Successfully assigned apptest-5bldoukc/apptest-5bldoukc-migrator-ckqhk to gke-marketplace-dev-default-pool-f6e7d67a-mt1z
+2s          Normal    Pulled                 pod/apptest-5bldoukc-migrator-ckqhk               Container image "gcr.io/plainsight-public/images/migrator:1.0.0" already present on machine
+1s          Normal    Created                pod/apptest-5bldoukc-migrator-ckqhk               Created container migrator
+1s          Normal    Started                pod/apptest-5bldoukc-migrator-ckqhk               Started container migrator
+3s          Normal    SuccessfulCreate       job/apptest-5bldoukc-migrator                     Created pod: apptest-5bldoukc-migrator-ckqhk
+Using /opt/kubectl/1.18/kubectl (server=1.19)
+INFO Collecting logs for deployer
+Using /opt/kubectl/1.18/kubectl (server=1.19)
++ trap handle_failure EXIT
++ LOG_SMOKE_TEST=SMOKE_TEST
++ test_schema=/data-test/schema.yaml
++ overlay_test_schema.py --test_schema /data-test/schema.yaml --original_schema /data/schema.yaml --output /data/schema.yaml
+++ /bin/print_config.py --xtype NAME --values_mode raw
++ NAME=apptest-5bldoukc
+++ /bin/print_config.py --xtype NAMESPACE --values_mode raw
++ NAMESPACE=apptest-5bldoukc
++ export NAME
++ export NAMESPACE
++ echo 'Deploying application "apptest-5bldoukc" in test mode'
+Deploying application "apptest-5bldoukc" in test mode
+++ kubectl get applications.app.k8s.io/apptest-5bldoukc --namespace=apptest-5bldoukc '--output=jsonpath={.metadata.uid}'
+Using /opt/kubectl/1.18/kubectl (server=1.19)
++ app_uid=dbf10b50-bff4-4a93-ab27-d579ddd52c8d
+++ kubectl get applications.app.k8s.io/apptest-5bldoukc --namespace=apptest-5bldoukc '--output=jsonpath={.apiVersion}'
+Using /opt/kubectl/1.18/kubectl (server=1.19)
++ app_api_version=app.k8s.io/v1beta1
+++ kubectl get namespaces/apptest-5bldoukc '--output=jsonpath={.metadata.uid}'
+Using /opt/kubectl/1.18/kubectl (server=1.19)
++ namespace_uid=a52bd8f6-7e17-45ff-aa1f-ff7560c94704
++ /bin/expand_config.py --values_mode raw --app_uid dbf10b50-bff4-4a93-ab27-d579ddd52c8d
++ create_manifests.sh --mode=test
++ for i in '"$@"'
++ case $i in
++ mode=test
++ shift
++ [[ -z apptest-5bldoukc ]]
++ [[ -z apptest-5bldoukc ]]
++ echo 'Creating the manifests for the kubernetes resources that build the application "apptest-5bldoukc"'
+Creating the manifests for the kubernetes resources that build the application "apptest-5bldoukc"
++ data_dir=/data
++ manifest_dir=/data/manifest-expanded
++ mkdir -p /data/manifest-expanded
++ [[ test = \t\e\s\t ]]
++ test_data_dir=/data-test
++ mkdir -p /data-test
++ extract_manifest /data
++ data=/data
++ extracted=/data/extracted
++ data_chart=/data/chart
++ mkdir -p /data/extracted
++ [[ -d /data/chart ]]
+++ find /data/chart -maxdepth 1 -type f -name '*.tar.gz'
++ for chart in '$(find "$data_chart" -maxdepth 1 -type f -name "*.tar.gz")'
+++ sed 's/.tar.gz$//'
+++ basename /data/chart/Plainsight.tar.gz
++ chart_manifest_file=Plainsight
++ mkdir /data/extracted/Plainsight
++ tar xfC /data/chart/Plainsight.tar.gz /data/extracted/Plainsight
++ [[ test = \t\e\s\t ]]
++ extract_manifest /data-test
++ data=/data-test
++ extracted=/data-test/extracted
++ data_chart=/data-test/chart
++ mkdir -p /data-test/extracted
++ [[ -d /data-test/chart ]]
+++ find /data-test/chart -maxdepth 1 -type f -name '*.tar.gz'
++ for chart in '$(find "$data_chart" -maxdepth 1 -type f -name "*.tar.gz")'
+++ sed 's/.tar.gz$//'
+++ basename /data-test/chart/Plainsight.tar.gz
++ chart_manifest_file=Plainsight
++ mkdir /data-test/extracted/Plainsight
++ tar xfC /data-test/chart/Plainsight.tar.gz /data-test/extracted/Plainsight
++ [[ ! -e /data/extracted ]]
++ overlay_test_files.py --manifest /data/extracted --test_manifest /data-test/extracted
+=== values.yaml ===
++ echo '=== values.yaml ==='
++ /bin/print_config.py --output=yaml
+api:
+  image:
+    repository: gcr.io/plainsight-public/images/api
+    tag: 1.0.0
+billing:
+  image:
+    repository: gcr.io/plainsight-public/images/billing
+    tag: 1.0.0
+dashboard:
+  image:
+    repository: gcr.io/plainsight-public/images/dashboard
+    tag: 1.0.0
+gcp:
+  project: myProject
+  region: my-region1
+  verify: true
+  zone: my-region1-a
+migrator:
+  image:
+    repository: gcr.io/plainsight-public/images/migrator
+    tag: 1.0.0
+name: apptest-5bldoukc
+namespace: apptest-5bldoukc
+workers:
+  image:
+    repository: gcr.io/plainsight-public/images/worker
+    tag: 1.0.0
+===================
++ echo ===================
++ for chart in '"$data_dir/extracted"/*'
+++ basename /data/extracted/Plainsight
+++ sed 's/.tar.gz$//'
++ chart_manifest_file=Plainsight.yaml
++ helm template apptest-5bldoukc /data/extracted/Plainsight/chart --namespace=apptest-5bldoukc --values=/dev/fd/63
+++ /bin/print_config.py --output=yaml
++ [[ test != \t\e\s\t ]]
++ process_helm_hooks.py --deploy_tests --manifest /data/manifest-expanded/Plainsight.yaml
+INFO Reading /data/manifest-expanded/Plainsight.yaml
++ ensure_k8s_apps_labels.py --manifest /data/manifest-expanded/Plainsight.yaml --appname apptest-5bldoukc
+INFO Reading /data/manifest-expanded/Plainsight.yaml
++ /bin/set_ownership.py --app_name apptest-5bldoukc --app_uid dbf10b50-bff4-4a93-ab27-d579ddd52c8d --app_api_version app.k8s.io/v1beta1 --namespace apptest-5bldoukc --namespace_uid a52bd8f6-7e17-45ff-aa1f-ff7560c94704 --manifests /data/manifest-expanded --dest /data/resources.yaml
+INFO Reading /data/manifest-expanded/Plainsight.yaml
+INFO Application 'apptest-5bldoukc' owns 'ServiceAccount/apptest-5bldoukc-api'
+INFO Application 'apptest-5bldoukc' owns 'ServiceAccount/apptest-5bldoukc-billing'
+INFO Application 'apptest-5bldoukc' owns 'ServiceAccount/apptest-5bldoukc-dashboard'
+INFO Application 'apptest-5bldoukc' owns 'ServiceAccount/vertex-ai-deployer-worker'
+INFO Application 'apptest-5bldoukc' owns 'Service/apptest-5bldoukc-api'
+INFO Application 'apptest-5bldoukc' owns 'Service/apptest-5bldoukc-dashboard'
+INFO Application 'apptest-5bldoukc' owns 'Deployment/apptest-5bldoukc-api'
+INFO Application 'apptest-5bldoukc' owns 'Deployment/apptest-5bldoukc-billing'
+INFO Application 'apptest-5bldoukc' owns 'Deployment/apptest-5bldoukc-dashboard'
+INFO Application 'apptest-5bldoukc' owns 'Deployment/clip-worker'
+INFO Application 'apptest-5bldoukc' owns 'Deployment/export-dataset-version-worker'
+INFO Application 'apptest-5bldoukc' owns 'Deployment/frame-worker'
+INFO Application 'apptest-5bldoukc' owns 'Deployment/migrate-worker'
+INFO Application 'apptest-5bldoukc' owns 'Deployment/model-deployment-status-worker'
+INFO Application 'apptest-5bldoukc' owns 'Deployment/model-restart-worker'
+INFO Application 'apptest-5bldoukc' owns 'Deployment/sync-worker'
+INFO Application 'apptest-5bldoukc' owns 'Deployment/train-worker'
+INFO Application 'apptest-5bldoukc' owns 'Deployment/upload-worker'
+INFO Application 'apptest-5bldoukc' owns 'Deployment/url-upload-worker'
+INFO Application 'apptest-5bldoukc' owns 'Deployment/vertex-ai-deployer-worker'
+INFO Application 'apptest-5bldoukc' owns 'Job/apptest-5bldoukc-migrator'
++ validate_app_resource.py --manifests /data/resources.yaml
+INFO Reading /data/resources.yaml
++ separate_tester_resources.py --app_uid dbf10b50-bff4-4a93-ab27-d579ddd52c8d --app_name apptest-5bldoukc --app_api_version app.k8s.io/v1beta1 --manifests /data/resources.yaml --out_manifests /data/resources.yaml --out_test_manifests /data/tester.yaml
+INFO Reading /data/resources.yaml
+INFO Prod resource: ServiceAccount/apptest-5bldoukc-api
+INFO Prod resource: ServiceAccount/apptest-5bldoukc-billing
+INFO Prod resource: ServiceAccount/apptest-5bldoukc-dashboard
+INFO Prod resource: ServiceAccount/vertex-ai-deployer-worker
+INFO Prod resource: Service/apptest-5bldoukc-api
+INFO Prod resource: Service/apptest-5bldoukc-dashboard
+INFO Prod resource: Deployment/apptest-5bldoukc-api
+INFO Prod resource: Deployment/apptest-5bldoukc-billing
+INFO Prod resource: Deployment/apptest-5bldoukc-dashboard
+INFO Prod resource: Deployment/clip-worker
+INFO Prod resource: Deployment/export-dataset-version-worker
+INFO Prod resource: Deployment/frame-worker
+INFO Prod resource: Deployment/migrate-worker
+INFO Prod resource: Deployment/model-deployment-status-worker
+INFO Prod resource: Deployment/model-restart-worker
+INFO Prod resource: Deployment/sync-worker
+INFO Prod resource: Deployment/train-worker
+INFO Prod resource: Deployment/upload-worker
+INFO Prod resource: Deployment/url-upload-worker
+INFO Prod resource: Deployment/vertex-ai-deployer-worker
+INFO Prod resource: Job/apptest-5bldoukc-migrator
+INFO Prod resource: Application/apptest-5bldoukc
++ kubectl apply --namespace=apptest-5bldoukc --filename=/data/resources.yaml
+Using /opt/kubectl/1.18/kubectl (server=1.19)
+serviceaccount/apptest-5bldoukc-api created
+serviceaccount/apptest-5bldoukc-billing created
+serviceaccount/apptest-5bldoukc-dashboard created
+service/apptest-5bldoukc-api created
+service/apptest-5bldoukc-dashboard created
+deployment.apps/apptest-5bldoukc-api created
+deployment.apps/apptest-5bldoukc-billing created
+deployment.apps/apptest-5bldoukc-dashboard created
+job.batch/apptest-5bldoukc-migrator created
+unable to decode "/data/resources.yaml": resource.metadataOnlyObject.ObjectMeta: v1.ObjectMeta.OwnerReferences: []v1.OwnerReference: Name: Labels: ReadString: expects " or n, but found 1, error found in #10 byte of ...|version":1,"helm.sh/|..., bigger context ...|-ai-deployer-worker","app.kubernetes.io/version":1,"helm.sh/chart":"workers-1.0.0"},"name":"vertex-a|...
+Error from server (BadRequest): error when creating "/data/resources.yaml": Deployment in version "v1" cannot be handled as a Deployment: v1.Deployment.Spec: v1.DeploymentSpec.Template: v1.PodTemplateSpec.Selector: v1.LabelSelector.MatchLabels: ReadString: expects " or n, but found 1, error found in #10 byte of ...|version":1}},"templa|..., bigger context ...|/name":"clip-worker","app.kubernetes.io/version":1}},"template":{"metadata":{"labels":{"app.kubernet|...
+Error from server (BadRequest): error when creating "/data/resources.yaml": Deployment in version "v1" cannot be handled as a Deployment: v1.Deployment.Spec: v1.DeploymentSpec.Template: v1.PodTemplateSpec.Selector: v1.LabelSelector.MatchLabels: ReadString: expects " or n, but found 1, error found in #10 byte of ...|version":1}},"templa|..., bigger context ...|aset-version-worker","app.kubernetes.io/version":1}},"template":{"metadata":{"labels":{"app.kubernet|...
+Error from server (BadRequest): error when creating "/data/resources.yaml": Deployment in version "v1" cannot be handled as a Deployment: v1.Deployment.Spec: v1.DeploymentSpec.Template: v1.PodTemplateSpec.Selector: v1.LabelSelector.MatchLabels: ReadString: expects " or n, but found 1, error found in #10 byte of ...|version":1}},"templa|..., bigger context ...|name":"frame-worker","app.kubernetes.io/version":1}},"template":{"metadata":{"labels":{"app.kubernet|...
+Error from server (BadRequest): error when creating "/data/resources.yaml": Deployment in version "v1" cannot be handled as a Deployment: v1.Deployment.Spec: v1.DeploymentSpec.Template: v1.PodTemplateSpec.Selector: v1.LabelSelector.MatchLabels: ReadString: expects " or n, but found 1, error found in #10 byte of ...|version":1}},"templa|..., bigger context ...|me":"migrate-worker","app.kubernetes.io/version":1}},"template":{"metadata":{"labels":{"app.kubernet|...
+Error from server (BadRequest): error when creating "/data/resources.yaml": Deployment in version "v1" cannot be handled as a Deployment: v1.Deployment.Spec: v1.DeploymentSpec.Template: v1.PodTemplateSpec.Selector: v1.LabelSelector.MatchLabels: ReadString: expects " or n, but found 1, error found in #10 byte of ...|version":1}},"templa|..., bigger context ...|yment-status-worker","app.kubernetes.io/version":1}},"template":{"metadata":{"labels":{"app.kubernet|...
+Error from server (BadRequest): error when creating "/data/resources.yaml": Deployment in version "v1" cannot be handled as a Deployment: v1.Deployment.Spec: v1.DeploymentSpec.Template: v1.PodTemplateSpec.Selector: v1.LabelSelector.MatchLabels: ReadString: expects " or n, but found 1, error found in #10 byte of ...|version":1}},"templa|..., bigger context ...|odel-restart-worker","app.kubernetes.io/version":1}},"template":{"metadata":{"labels":{"app.kubernet|...
+Error from server (BadRequest): error when creating "/data/resources.yaml": Deployment in version "v1" cannot be handled as a Deployment: v1.Deployment.Spec: v1.DeploymentSpec.Template: v1.PodTemplateSpec.Selector: v1.LabelSelector.MatchLabels: ReadString: expects " or n, but found 1, error found in #10 byte of ...|version":1}},"templa|..., bigger context ...|/name":"sync-worker","app.kubernetes.io/version":1}},"template":{"metadata":{"labels":{"app.kubernet|...
+Error from server (BadRequest): error when creating "/data/resources.yaml": Deployment in version "v1" cannot be handled as a Deployment: v1.Deployment.Spec: v1.DeploymentSpec.Template: v1.PodTemplateSpec.Selector: v1.LabelSelector.MatchLabels: ReadString: expects " or n, but found 1, error found in #10 byte of ...|version":1}},"templa|..., bigger context ...|name":"train-worker","app.kubernetes.io/version":1}},"template":{"metadata":{"labels":{"app.kubernet|...
+Error from server (BadRequest): error when creating "/data/resources.yaml": Deployment in version "v1" cannot be handled as a Deployment: v1.Deployment.Spec: v1.DeploymentSpec.Template: v1.PodTemplateSpec.Selector: v1.LabelSelector.MatchLabels: ReadString: expects " or n, but found 1, error found in #10 byte of ...|version":1}},"templa|..., bigger context ...|ame":"upload-worker","app.kubernetes.io/version":1}},"template":{"metadata":{"labels":{"app.kubernet|...
+Error from server (BadRequest): error when creating "/data/resources.yaml": Deployment in version "v1" cannot be handled as a Deployment: v1.Deployment.Spec: v1.DeploymentSpec.Template: v1.PodTemplateSpec.Selector: v1.LabelSelector.MatchLabels: ReadString: expects " or n, but found 1, error found in #10 byte of ...|version":1}},"templa|..., bigger context ...|:"url-upload-worker","app.kubernetes.io/version":1}},"template":{"metadata":{"labels":{"app.kubernet|...
+Error from server (BadRequest): error when creating "/data/resources.yaml": Deployment in version "v1" cannot be handled as a Deployment: v1.Deployment.Spec: v1.DeploymentSpec.Template: v1.PodTemplateSpec.Selector: v1.LabelSelector.MatchLabels: ReadString: expects " or n, but found 1, error found in #10 byte of ...|version":1}},"templa|..., bigger context ...|-ai-deployer-worker","app.kubernetes.io/version":1}},"template":{"metadata":{"labels":{"app.kubernet|...
+application.app.k8s.io/apptest-5bldoukc configured
++ handle_failure
++ code=1
++ [[ -z apptest-5bldoukc ]]
++ [[ -z apptest-5bldoukc ]]
++ patch_assembly_phase.sh --status=Failed
++ for i in '"$@"'
++ case $i in
++ status=Failed
++ shift
++ [[ -z Failed ]]
++ [[ Failed =~ ^(Pending|Success|Failed)$ ]]
++ [[ -z apptest-5bldoukc ]]
++ [[ -z apptest-5bldoukc ]]
++ echo 'Marking deployment of application "apptest-5bldoukc" as "Failed".'
++ [[ Failed == \S\u\c\c\e\s\s ]]
++ kubectl patch applications.app.k8s.io/apptest-5bldoukc --output=json --namespace=apptest-5bldoukc --type=merge --patch '{"spec": {"assemblyPhase": "Failed"}}'
+Marking deployment of application "apptest-5bldoukc" as "Failed".
+Using /opt/kubectl/1.18/kubectl (server=1.19)
+{
+    "apiVersion": "app.k8s.io/v1beta1",
+    "kind": "Application",
+    "metadata": {
+        "annotations": {
+            "kubectl.kubernetes.io/last-applied-configuration": "{\"apiVersion\":\"app.k8s.io/v1beta1\",\"kind\":\"Application\",\"metadata\":{\"annotations\":{\"kubernetes-engine.cloud.google.com/icon\":\"data:image/png;base64,\",\"marketplace.cloud.google.com/deploy-info\":\"{\\\"partner_id\\\": \\\"plainsight-public\\\", \\\"product_id\\\": \\\"plainsight-k8s-public\\\", \\\"partner_name\\\": \\\"Plainsight\\\"}\"},\"labels\":{\"app.kubernetes.io/name\":\"apptest-5bldoukc\"},\"name\":\"apptest-5bldoukc\",\"namespace\":\"apptest-5bldoukc\"},\"spec\":{\"componentKinds\":[{\"group\":\"apps/v1\",\"kind\":\"Deployment\"},{\"group\":\"v1\",\"kind\":\"Service\"},{\"group\":\"v1\",\"kind\":\"ConfigMap\"},{\"group\":\"v1\",\"kind\":\"ServiceAccount\"},{\"group\":\"batch/v1\",\"kind\":\"Job\"}],\"descriptor\":{\"description\":\"Plainsight\",\"links\":[{\"description\":\"User Guide: Google Click to Deploy Plainsight\",\"url\":\"https://github.com/sixgill/plainsight-marketplace-deployer/README.md\"}],\"maintainers\":[{\"name\":\"Plainsight\",\"url\":\"https://plainsight.ai\"}],\"type\":\"Plainsight\",\"version\":\"1.0.0\"},\"info\":null,\"selector\":{\"matchLabels\":{\"app.kubernetes.io/name\":\"apptest-5bldoukc\"}}}}\n",
+            "kubernetes-engine.cloud.google.com/icon": "data:image/png;base64,",
+            "marketplace.cloud.google.com/deploy-info": "{\"partner_id\": \"plainsight-public\", \"product_id\": \"plainsight-k8s-public\", \"partner_name\": \"Plainsight\"}"
+        },
+        "creationTimestamp": "2021-07-23T17:01:13Z",
+        "generation": 3,
+        "labels": {
+            "app.kubernetes.io/name": "apptest-5bldoukc"
+        },
+        "managedFields": [
+            {
+                "apiVersion": "app.k8s.io/v1beta1",
+                "fieldsType": "FieldsV1",
+                "fieldsV1": {
+                    "f:metadata": {
+                        "f:annotations": {
+                            ".": {},
+                            "f:kubectl.kubernetes.io/last-applied-configuration": {},
+                            "f:kubernetes-engine.cloud.google.com/icon": {},
+                            "f:marketplace.cloud.google.com/deploy-info": {}
+                        },
+                        "f:labels": {
+                            ".": {},
+                            "f:app.kubernetes.io/name": {}
+                        }
+                    },
+                    "f:spec": {
+                        ".": {},
+                        "f:assemblyPhase": {},
+                        "f:componentKinds": {},
+                        "f:descriptor": {
+                            ".": {},
+                            "f:description": {},
+                            "f:links": {},
+                            "f:maintainers": {},
+                            "f:type": {},
+                            "f:version": {}
+                        },
+                        "f:selector": {
+                            ".": {},
+                            "f:matchLabels": {
+                                ".": {},
+                                "f:app.kubernetes.io/name": {}
+                            }
+                        }
+                    }
+                },
+                "manager": "kubectl",
+                "operation": "Update",
+                "time": "2021-07-23T17:01:22Z"
+            }
+        ],
+        "name": "apptest-5bldoukc",
+        "namespace": "apptest-5bldoukc",
+        "resourceVersion": "65747889",
+        "selfLink": "/apis/app.k8s.io/v1beta1/namespaces/apptest-5bldoukc/applications/apptest-5bldoukc",
+        "uid": "dbf10b50-bff4-4a93-ab27-d579ddd52c8d"
+    },
+    "spec": {
+        "assemblyPhase": "Failed",
+        "componentKinds": [
+            {
+                "group": "apps/v1",
+                "kind": "Deployment"
+            },
+            {
+                "group": "v1",
+                "kind": "Service"
+            },
+            {
+                "group": "v1",
+                "kind": "ConfigMap"
+            },
+            {
+                "group": "v1",
+                "kind": "ServiceAccount"
+            },
+            {
+                "group": "batch/v1",
+                "kind": "Job"
+            }
+        ],
+        "descriptor": {
+            "description": "Plainsight",
+            "links": [
+                {
+                    "description": "User Guide: Google Click to Deploy Plainsight",
+                    "url": "https://github.com/sixgill/plainsight-marketplace-deployer/README.md"
+                }
+            ],
+            "maintainers": [
+                {
+                    "name": "Plainsight",
+                    "url": "https://plainsight.ai"
+                }
+            ],
+            "type": "Plainsight",
+            "version": "1.0.0"
+        },
+        "selector": {
+            "matchLabels": {
+                "app.kubernetes.io/name": "apptest-5bldoukc"
+            }
+        }
+    }
+}
++ exit 1
+Using /opt/kubectl/1.18/kubectl (server=1.19)
+INFO Deleting namespace "apptest-5bldoukc"
+Using /opt/kubectl/1.18/kubectl (server=1.19)
+apiVersion: v1
+items:
+- apiVersion: v1
+  kind: Pod
+  metadata:
+    creationTimestamp: "2021-07-23T17:01:21Z"
+    generateName: apptest-5bldoukc-api-6844947664-
+    labels:
+      app.kubernetes.io/instance: apptest-5bldoukc
+      app.kubernetes.io/name: api
+      pod-template-hash: "6844947664"
+    managedFields:
+    - apiVersion: v1
+      fieldsType: FieldsV1
+      fieldsV1:
+        f:metadata:
+          f:generateName: {}
+          f:labels:
+            .: {}
+            f:app.kubernetes.io/instance: {}
+            f:app.kubernetes.io/name: {}
+            f:pod-template-hash: {}
+          f:ownerReferences:
+            .: {}
+            k:{"uid":"ca77f7fc-dcaf-44b9-83a6-1ac2e9fd88af"}:
+              .: {}
+              f:apiVersion: {}
+              f:blockOwnerDeletion: {}
+              f:controller: {}
+              f:kind: {}
+              f:name: {}
+              f:uid: {}
+        f:spec:
+          f:containers:
+            k:{"name":"api"}:
+              .: {}
+              f:env:
+                .: {}
+                k:{"name":"SENSE_PLEASE_DONT_DIE"}:
+                  .: {}
+                  f:name: {}
+                  f:value: {}
+              f:image: {}
+              f:imagePullPolicy: {}
+              f:livenessProbe:
+                .: {}
+                f:failureThreshold: {}
+                f:httpGet:
+                  .: {}
+                  f:path: {}
+                  f:port: {}
+                  f:scheme: {}
+                f:periodSeconds: {}
+                f:successThreshold: {}
+                f:timeoutSeconds: {}
+              f:name: {}
+              f:ports:
+                .: {}
+                k:{"containerPort":80,"protocol":"TCP"}:
+                  .: {}
+                  f:containerPort: {}
+                  f:name: {}
+                  f:protocol: {}
+              f:readinessProbe:
+                .: {}
+                f:failureThreshold: {}
+                f:httpGet:
+                  .: {}
+                  f:path: {}
+                  f:port: {}
+                  f:scheme: {}
+                f:periodSeconds: {}
+                f:successThreshold: {}
+                f:timeoutSeconds: {}
+              f:resources: {}
+              f:securityContext: {}
+              f:terminationMessagePath: {}
+              f:terminationMessagePolicy: {}
+          f:dnsPolicy: {}
+          f:enableServiceLinks: {}
+          f:restartPolicy: {}
+          f:schedulerName: {}
+          f:securityContext: {}
+          f:serviceAccount: {}
+          f:serviceAccountName: {}
+          f:terminationGracePeriodSeconds: {}
+      manager: kube-controller-manager
+      operation: Update
+      time: "2021-07-23T17:01:21Z"
+    - apiVersion: v1
+      fieldsType: FieldsV1
+      fieldsV1:
+        f:status:
+          f:conditions:
+            k:{"type":"ContainersReady"}:
+              .: {}
+              f:lastProbeTime: {}
+              f:lastTransitionTime: {}
+              f:message: {}
+              f:reason: {}
+              f:status: {}
+              f:type: {}
+            k:{"type":"Initialized"}:
+              .: {}
+              f:lastProbeTime: {}
+              f:lastTransitionTime: {}
+              f:status: {}
+              f:type: {}
+            k:{"type":"Ready"}:
+              .: {}
+              f:lastProbeTime: {}
+              f:lastTransitionTime: {}
+              f:message: {}
+              f:reason: {}
+              f:status: {}
+              f:type: {}
+          f:containerStatuses: {}
+          f:hostIP: {}
+          f:phase: {}
+          f:podIP: {}
+          f:podIPs:
+            .: {}
+            k:{"ip":"10.148.7.36"}:
+              .: {}
+              f:ip: {}
+          f:startTime: {}
+      manager: kubelet
+      operation: Update
+      time: "2021-07-23T17:01:24Z"
+    name: apptest-5bldoukc-api-6844947664-b2lgh
+    namespace: apptest-5bldoukc
+    ownerReferences:
+    - apiVersion: apps/v1
+      blockOwnerDeletion: true
+      controller: true
+      kind: ReplicaSet
+      name: apptest-5bldoukc-api-6844947664
+      uid: ca77f7fc-dcaf-44b9-83a6-1ac2e9fd88af
+    resourceVersion: "65747905"
+    selfLink: /api/v1/namespaces/apptest-5bldoukc/pods/apptest-5bldoukc-api-6844947664-b2lgh
+    uid: e2ddde73-3bef-4e95-a8ab-4c8c8e3b5ea3
+  spec:
+    containers:
+    - env:
+      - name: SENSE_PLEASE_DONT_DIE
+        value: "true"
+      - name: NEW_RELIC_METADATA_KUBERNETES_CLUSTER_NAME
+        value: marketplace-dev
+      - name: NEW_RELIC_METADATA_KUBERNETES_NODE_NAME
+        valueFrom:
+          fieldRef:
+            apiVersion: v1
+            fieldPath: spec.nodeName
+      - name: NEW_RELIC_METADATA_KUBERNETES_NAMESPACE_NAME
+        valueFrom:
+          fieldRef:
+            apiVersion: v1
+            fieldPath: metadata.namespace
+      - name: NEW_RELIC_METADATA_KUBERNETES_POD_NAME
+        valueFrom:
+          fieldRef:
+            apiVersion: v1
+            fieldPath: metadata.name
+      - name: NEW_RELIC_METADATA_KUBERNETES_CONTAINER_NAME
+        value: api
+      - name: NEW_RELIC_METADATA_KUBERNETES_CONTAINER_IMAGE_NAME
+        value: gcr.io/plainsight-public/images/api:1.0.0
+      - name: NEW_RELIC_METADATA_KUBERNETES_DEPLOYMENT_NAME
+        value: apptest-5bldoukc-api
+      image: gcr.io/plainsight-public/images/api:1.0.0
+      imagePullPolicy: IfNotPresent
+      livenessProbe:
+        failureThreshold: 3
+        httpGet:
+          path: /
+          port: http
+          scheme: HTTP
+        periodSeconds: 10
+        successThreshold: 1
+        timeoutSeconds: 1
+      name: api
+      ports:
+      - containerPort: 80
+        name: http
+        protocol: TCP
+      readinessProbe:
+        failureThreshold: 3
+        httpGet:
+          path: /
+          port: http
+          scheme: HTTP
+        periodSeconds: 10
+        successThreshold: 1
+        timeoutSeconds: 1
+      resources: {}
+      securityContext: {}
+      terminationMessagePath: /dev/termination-log
+      terminationMessagePolicy: File
+      volumeMounts:
+      - mountPath: /var/run/secrets/kubernetes.io/serviceaccount
+        name: apptest-5bldoukc-api-token-7pfdt
+        readOnly: true
+    dnsPolicy: ClusterFirst
+    enableServiceLinks: true
+    nodeName: gke-marketplace-dev-default-pool-f6e7d67a-mt1z
+    preemptionPolicy: PreemptLowerPriority
+    priority: 0
+    restartPolicy: Always
+    schedulerName: default-scheduler
+    securityContext: {}
+    serviceAccount: apptest-5bldoukc-api
+    serviceAccountName: apptest-5bldoukc-api
+    terminationGracePeriodSeconds: 30
+    tolerations:
+    - effect: NoExecute
+      key: node.kubernetes.io/not-ready
+      operator: Exists
+      tolerationSeconds: 300
+    - effect: NoExecute
+      key: node.kubernetes.io/unreachable
+      operator: Exists
+      tolerationSeconds: 300
+    volumes:
+    - name: apptest-5bldoukc-api-token-7pfdt
+      secret:
+        defaultMode: 420
+        secretName: apptest-5bldoukc-api-token-7pfdt
+  status:
+    conditions:
+    - lastProbeTime: null
+      lastTransitionTime: "2021-07-23T17:01:21Z"
+      status: "True"
+      type: Initialized
+    - lastProbeTime: null
+      lastTransitionTime: "2021-07-23T17:01:21Z"
+      message: 'containers with unready status: [api]'
+      reason: ContainersNotReady
+      status: "False"
+      type: Ready
+    - lastProbeTime: null
+      lastTransitionTime: "2021-07-23T17:01:21Z"
+      message: 'containers with unready status: [api]'
+      reason: ContainersNotReady
+      status: "False"
+      type: ContainersReady
+    - lastProbeTime: null
+      lastTransitionTime: "2021-07-23T17:01:21Z"
+      status: "True"
+      type: PodScheduled
+    containerStatuses:
+    - containerID: containerd://60a31421b6477186f7aa28c88ccdf70e18c29befef46ae0ce1abe71dd8c6bd02
+      image: gcr.io/plainsight-public/images/api:1.0.0
+      imageID: gcr.io/plainsight-public/images/api@sha256:ea31d0efd35ffcd36011582e09c0767de78ffb2d45d34c83ab99df1a7ea282f7
+      lastState: {}
+      name: api
+      ready: false
+      restartCount: 0
+      started: true
+      state:
+        running:
+          startedAt: "2021-07-23T17:01:24Z"
+    hostIP: 10.1.15.202
+    phase: Running
+    podIP: 10.148.7.36
+    podIPs:
+    - ip: 10.148.7.36
+    qosClass: BestEffort
+    startTime: "2021-07-23T17:01:21Z"
+- apiVersion: v1
+  kind: Pod
+  metadata:
+    creationTimestamp: "2021-07-23T17:01:21Z"
+    generateName: apptest-5bldoukc-billing-74c68f4cff-
+    labels:
+      app.kubernetes.io/instance: apptest-5bldoukc
+      app.kubernetes.io/name: billing
+      pod-template-hash: 74c68f4cff
+    managedFields:
+    - apiVersion: v1
+      fieldsType: FieldsV1
+      fieldsV1:
+        f:metadata:
+          f:generateName: {}
+          f:labels:
+            .: {}
+            f:app.kubernetes.io/instance: {}
+            f:app.kubernetes.io/name: {}
+            f:pod-template-hash: {}
+          f:ownerReferences:
+            .: {}
+            k:{"uid":"6a0c17a3-3402-4243-af3e-ffa4ead77904"}:
+              .: {}
+              f:apiVersion: {}
+              f:blockOwnerDeletion: {}
+              f:controller: {}
+              f:kind: {}
+              f:name: {}
+              f:uid: {}
+        f:spec:
+          f:containers:
+            k:{"name":"billing"}:
+              .: {}
+              f:env:
+                .: {}
+                k:{"name":"SENSE_PLEASE_DONT_DIE"}:
+                  .: {}
+                  f:name: {}
+                  f:value: {}
+              f:image: {}
+              f:imagePullPolicy: {}
+              f:livenessProbe:
+                .: {}
+                f:failureThreshold: {}
+                f:httpGet:
+                  .: {}
+                  f:path: {}
+                  f:port: {}
+                  f:scheme: {}
+                f:periodSeconds: {}
+                f:successThreshold: {}
+                f:timeoutSeconds: {}
+              f:name: {}
+              f:ports:
+                .: {}
+                k:{"containerPort":80,"protocol":"TCP"}:
+                  .: {}
+                  f:containerPort: {}
+                  f:name: {}
+                  f:protocol: {}
+              f:readinessProbe:
+                .: {}
+                f:failureThreshold: {}
+                f:httpGet:
+                  .: {}
+                  f:path: {}
+                  f:port: {}
+                  f:scheme: {}
+                f:periodSeconds: {}
+                f:successThreshold: {}
+                f:timeoutSeconds: {}
+              f:resources: {}
+              f:securityContext: {}
+              f:terminationMessagePath: {}
+              f:terminationMessagePolicy: {}
+          f:dnsPolicy: {}
+          f:enableServiceLinks: {}
+          f:restartPolicy: {}
+          f:schedulerName: {}
+          f:securityContext: {}
+          f:serviceAccount: {}
+          f:serviceAccountName: {}
+          f:terminationGracePeriodSeconds: {}
+      manager: kube-controller-manager
+      operation: Update
+      time: "2021-07-23T17:01:21Z"
+    - apiVersion: v1
+      fieldsType: FieldsV1
+      fieldsV1:
+        f:status:
+          f:conditions:
+            k:{"type":"ContainersReady"}:
+              .: {}
+              f:lastProbeTime: {}
+              f:lastTransitionTime: {}
+              f:message: {}
+              f:reason: {}
+              f:status: {}
+              f:type: {}
+            k:{"type":"Initialized"}:
+              .: {}
+              f:lastProbeTime: {}
+              f:lastTransitionTime: {}
+              f:status: {}
+              f:type: {}
+            k:{"type":"Ready"}:
+              .: {}
+              f:lastProbeTime: {}
+              f:lastTransitionTime: {}
+              f:message: {}
+              f:reason: {}
+              f:status: {}
+              f:type: {}
+          f:containerStatuses: {}
+          f:hostIP: {}
+          f:phase: {}
+          f:podIP: {}
+          f:podIPs:
+            .: {}
+            k:{"ip":"10.148.7.39"}:
+              .: {}
+              f:ip: {}
+          f:startTime: {}
+      manager: kubelet
+      operation: Update
+      time: "2021-07-23T17:01:24Z"
+    name: apptest-5bldoukc-billing-74c68f4cff-2ghsb
+    namespace: apptest-5bldoukc
+    ownerReferences:
+    - apiVersion: apps/v1
+      blockOwnerDeletion: true
+      controller: true
+      kind: ReplicaSet
+      name: apptest-5bldoukc-billing-74c68f4cff
+      uid: 6a0c17a3-3402-4243-af3e-ffa4ead77904
+    resourceVersion: "65747911"
+    selfLink: /api/v1/namespaces/apptest-5bldoukc/pods/apptest-5bldoukc-billing-74c68f4cff-2ghsb
+    uid: a21398af-b9b8-44ea-8693-76970e4e5fbf
+  spec:
+    containers:
+    - env:
+      - name: SENSE_PLEASE_DONT_DIE
+        value: "true"
+      - name: NEW_RELIC_METADATA_KUBERNETES_CLUSTER_NAME
+        value: marketplace-dev
+      - name: NEW_RELIC_METADATA_KUBERNETES_NODE_NAME
+        valueFrom:
+          fieldRef:
+            apiVersion: v1
+            fieldPath: spec.nodeName
+      - name: NEW_RELIC_METADATA_KUBERNETES_NAMESPACE_NAME
+        valueFrom:
+          fieldRef:
+            apiVersion: v1
+            fieldPath: metadata.namespace
+      - name: NEW_RELIC_METADATA_KUBERNETES_POD_NAME
+        valueFrom:
+          fieldRef:
+            apiVersion: v1
+            fieldPath: metadata.name
+      - name: NEW_RELIC_METADATA_KUBERNETES_CONTAINER_NAME
+        value: billing
+      - name: NEW_RELIC_METADATA_KUBERNETES_CONTAINER_IMAGE_NAME
+        value: gcr.io/plainsight-public/images/billing:1.0.0
+      - name: NEW_RELIC_METADATA_KUBERNETES_DEPLOYMENT_NAME
+        value: apptest-5bldoukc-billing
+      image: gcr.io/plainsight-public/images/billing:1.0.0
+      imagePullPolicy: IfNotPresent
+      livenessProbe:
+        failureThreshold: 3
+        httpGet:
+          path: /
+          port: http
+          scheme: HTTP
+        periodSeconds: 10
+        successThreshold: 1
+        timeoutSeconds: 1
+      name: billing
+      ports:
+      - containerPort: 80
+        name: http
+        protocol: TCP
+      readinessProbe:
+        failureThreshold: 3
+        httpGet:
+          path: /
+          port: http
+          scheme: HTTP
+        periodSeconds: 10
+        successThreshold: 1
+        timeoutSeconds: 1
+      resources: {}
+      securityContext: {}
+      terminationMessagePath: /dev/termination-log
+      terminationMessagePolicy: File
+      volumeMounts:
+      - mountPath: /var/run/secrets/kubernetes.io/serviceaccount
+        name: apptest-5bldoukc-billing-token-r29kb
+        readOnly: true
+    dnsPolicy: ClusterFirst
+    enableServiceLinks: true
+    nodeName: gke-marketplace-dev-default-pool-f6e7d67a-mt1z
+    preemptionPolicy: PreemptLowerPriority
+    priority: 0
+    restartPolicy: Always
+    schedulerName: default-scheduler
+    securityContext: {}
+    serviceAccount: apptest-5bldoukc-billing
+    serviceAccountName: apptest-5bldoukc-billing
+    terminationGracePeriodSeconds: 30
+    tolerations:
+    - effect: NoExecute
+      key: node.kubernetes.io/not-ready
+      operator: Exists
+      tolerationSeconds: 300
+    - effect: NoExecute
+      key: node.kubernetes.io/unreachable
+      operator: Exists
+      tolerationSeconds: 300
+    volumes:
+    - name: apptest-5bldoukc-billing-token-r29kb
+      secret:
+        defaultMode: 420
+        secretName: apptest-5bldoukc-billing-token-r29kb
+  status:
+    conditions:
+    - lastProbeTime: null
+      lastTransitionTime: "2021-07-23T17:01:21Z"
+      status: "True"
+      type: Initialized
+    - lastProbeTime: null
+      lastTransitionTime: "2021-07-23T17:01:21Z"
+      message: 'containers with unready status: [billing]'
+      reason: ContainersNotReady
+      status: "False"
+      type: Ready
+    - lastProbeTime: null
+      lastTransitionTime: "2021-07-23T17:01:21Z"
+      message: 'containers with unready status: [billing]'
+      reason: ContainersNotReady
+      status: "False"
+      type: ContainersReady
+    - lastProbeTime: null
+      lastTransitionTime: "2021-07-23T17:01:21Z"
+      status: "True"
+      type: PodScheduled
+    containerStatuses:
+    - containerID: containerd://010e6fa85d6fa3420d4ef2bea666be0a7b250031a5e866c84a649f0cb6b653f2
+      image: gcr.io/plainsight-public/images/billing:1.0.0
+      imageID: gcr.io/plainsight-public/images/billing@sha256:44720b00ab15e3c14e0f840393fbf1c16029e256e8e9b03df610237c6a0ea766
+      lastState: {}
+      name: billing
+      ready: false
+      restartCount: 0
+      started: true
+      state:
+        running:
+          startedAt: "2021-07-23T17:01:24Z"
+    hostIP: 10.1.15.202
+    phase: Running
+    podIP: 10.148.7.39
+    podIPs:
+    - ip: 10.148.7.39
+    qosClass: BestEffort
+    startTime: "2021-07-23T17:01:21Z"
+- apiVersion: v1
+  kind: Pod
+  metadata:
+    creationTimestamp: "2021-07-23T17:01:21Z"
+    generateName: apptest-5bldoukc-dashboard-64c969b98-
+    labels:
+      app.kubernetes.io/instance: apptest-5bldoukc
+      app.kubernetes.io/name: dashboard
+      pod-template-hash: 64c969b98
+    managedFields:
+    - apiVersion: v1
+      fieldsType: FieldsV1
+      fieldsV1:
+        f:metadata:
+          f:generateName: {}
+          f:labels:
+            .: {}
+            f:app.kubernetes.io/instance: {}
+            f:app.kubernetes.io/name: {}
+            f:pod-template-hash: {}
+          f:ownerReferences:
+            .: {}
+            k:{"uid":"004556bc-7b61-4eee-9e15-41d2fd55f22b"}:
+              .: {}
+              f:apiVersion: {}
+              f:blockOwnerDeletion: {}
+              f:controller: {}
+              f:kind: {}
+              f:name: {}
+              f:uid: {}
+        f:spec:
+          f:containers:
+            k:{"name":"dashboard"}:
+              .: {}
+              f:image: {}
+              f:imagePullPolicy: {}
+              f:livenessProbe:
+                .: {}
+                f:failureThreshold: {}
+                f:httpGet:
+                  .: {}
+                  f:path: {}
+                  f:port: {}
+                  f:scheme: {}
+                f:periodSeconds: {}
+                f:successThreshold: {}
+                f:timeoutSeconds: {}
+              f:name: {}
+              f:ports:
+                .: {}
+                k:{"containerPort":80,"protocol":"TCP"}:
+                  .: {}
+                  f:containerPort: {}
+                  f:name: {}
+                  f:protocol: {}
+              f:readinessProbe:
+                .: {}
+                f:failureThreshold: {}
+                f:httpGet:
+                  .: {}
+                  f:path: {}
+                  f:port: {}
+                  f:scheme: {}
+                f:periodSeconds: {}
+                f:successThreshold: {}
+                f:timeoutSeconds: {}
+              f:resources: {}
+              f:securityContext: {}
+              f:terminationMessagePath: {}
+              f:terminationMessagePolicy: {}
+          f:dnsPolicy: {}
+          f:enableServiceLinks: {}
+          f:restartPolicy: {}
+          f:schedulerName: {}
+          f:securityContext: {}
+          f:serviceAccount: {}
+          f:serviceAccountName: {}
+          f:terminationGracePeriodSeconds: {}
+      manager: kube-controller-manager
+      operation: Update
+      time: "2021-07-23T17:01:21Z"
+    - apiVersion: v1
+      fieldsType: FieldsV1
+      fieldsV1:
+        f:status:
+          f:conditions:
+            k:{"type":"ContainersReady"}:
+              .: {}
+              f:lastProbeTime: {}
+              f:lastTransitionTime: {}
+              f:status: {}
+              f:type: {}
+            k:{"type":"Initialized"}:
+              .: {}
+              f:lastProbeTime: {}
+              f:lastTransitionTime: {}
+              f:status: {}
+              f:type: {}
+            k:{"type":"Ready"}:
+              .: {}
+              f:lastProbeTime: {}
+              f:lastTransitionTime: {}
+              f:status: {}
+              f:type: {}
+          f:containerStatuses: {}
+          f:hostIP: {}
+          f:phase: {}
+          f:podIP: {}
+          f:podIPs:
+            .: {}
+            k:{"ip":"10.148.7.37"}:
+              .: {}
+              f:ip: {}
+          f:startTime: {}
+      manager: kubelet
+      operation: Update
+      time: "2021-07-23T17:01:26Z"
+    name: apptest-5bldoukc-dashboard-64c969b98-4bxxk
+    namespace: apptest-5bldoukc
+    ownerReferences:
+    - apiVersion: apps/v1
+      blockOwnerDeletion: true
+      controller: true
+      kind: ReplicaSet
+      name: apptest-5bldoukc-dashboard-64c969b98
+      uid: 004556bc-7b61-4eee-9e15-41d2fd55f22b
+    resourceVersion: "65747926"
+    selfLink: /api/v1/namespaces/apptest-5bldoukc/pods/apptest-5bldoukc-dashboard-64c969b98-4bxxk
+    uid: 86c89608-63c4-4f1d-bde5-b640ab967c64
+  spec:
+    containers:
+    - env:
+      - name: NEW_RELIC_METADATA_KUBERNETES_CLUSTER_NAME
+        value: marketplace-dev
+      - name: NEW_RELIC_METADATA_KUBERNETES_NODE_NAME
+        valueFrom:
+          fieldRef:
+            apiVersion: v1
+            fieldPath: spec.nodeName
+      - name: NEW_RELIC_METADATA_KUBERNETES_NAMESPACE_NAME
+        valueFrom:
+          fieldRef:
+            apiVersion: v1
+            fieldPath: metadata.namespace
+      - name: NEW_RELIC_METADATA_KUBERNETES_POD_NAME
+        valueFrom:
+          fieldRef:
+            apiVersion: v1
+            fieldPath: metadata.name
+      - name: NEW_RELIC_METADATA_KUBERNETES_CONTAINER_NAME
+        value: dashboard
+      - name: NEW_RELIC_METADATA_KUBERNETES_CONTAINER_IMAGE_NAME
+        value: gcr.io/plainsight-public/images/dashboard:1.0.0
+      - name: NEW_RELIC_METADATA_KUBERNETES_DEPLOYMENT_NAME
+        value: apptest-5bldoukc-dashboard
+      image: gcr.io/plainsight-public/images/dashboard:1.0.0
+      imagePullPolicy: IfNotPresent
+      livenessProbe:
+        failureThreshold: 3
+        httpGet:
+          path: /
+          port: http
+          scheme: HTTP
+        periodSeconds: 10
+        successThreshold: 1
+        timeoutSeconds: 1
+      name: dashboard
+      ports:
+      - containerPort: 80
+        name: http
+        protocol: TCP
+      readinessProbe:
+        failureThreshold: 3
+        httpGet:
+          path: /
+          port: http
+          scheme: HTTP
+        periodSeconds: 10
+        successThreshold: 1
+        timeoutSeconds: 1
+      resources: {}
+      securityContext: {}
+      terminationMessagePath: /dev/termination-log
+      terminationMessagePolicy: File
+      volumeMounts:
+      - mountPath: /var/run/secrets/kubernetes.io/serviceaccount
+        name: apptest-5bldoukc-dashboard-token-7r5km
+        readOnly: true
+    dnsPolicy: ClusterFirst
+    enableServiceLinks: true
+    nodeName: gke-marketplace-dev-default-pool-f6e7d67a-mt1z
+    preemptionPolicy: PreemptLowerPriority
+    priority: 0
+    restartPolicy: Always
+    schedulerName: default-scheduler
+    securityContext: {}
+    serviceAccount: apptest-5bldoukc-dashboard
+    serviceAccountName: apptest-5bldoukc-dashboard
+    terminationGracePeriodSeconds: 30
+    tolerations:
+    - effect: NoExecute
+      key: node.kubernetes.io/not-ready
+      operator: Exists
+      tolerationSeconds: 300
+    - effect: NoExecute
+      key: node.kubernetes.io/unreachable
+      operator: Exists
+      tolerationSeconds: 300
+    volumes:
+    - name: apptest-5bldoukc-dashboard-token-7r5km
+      secret:
+        defaultMode: 420
+        secretName: apptest-5bldoukc-dashboard-token-7r5km
+  status:
+    conditions:
+    - lastProbeTime: null
+      lastTransitionTime: "2021-07-23T17:01:21Z"
+      status: "True"
+      type: Initialized
+    - lastProbeTime: null
+      lastTransitionTime: "2021-07-23T17:01:26Z"
+      status: "True"
+      type: Ready
+    - lastProbeTime: null
+      lastTransitionTime: "2021-07-23T17:01:26Z"
+      status: "True"
+      type: ContainersReady
+    - lastProbeTime: null
+      lastTransitionTime: "2021-07-23T17:01:21Z"
+      status: "True"
+      type: PodScheduled
+    containerStatuses:
+    - containerID: containerd://d026cd4a7eaf1e33949288169104e7286c59e0bcc722d9a83e1ff0512b666e0c
+      image: gcr.io/plainsight-public/images/dashboard:1.0.0
+      imageID: gcr.io/plainsight-public/images/dashboard@sha256:f980e93f9331c46c9add74a0935827b7b64378d1c864e9bbe93c97922325ecbd
+      lastState: {}
+      name: dashboard
+      ready: true
+      restartCount: 0
+      started: true
+      state:
+        running:
+          startedAt: "2021-07-23T17:01:24Z"
+    hostIP: 10.1.15.202
+    phase: Running
+    podIP: 10.148.7.37
+    podIPs:
+    - ip: 10.148.7.37
+    qosClass: BestEffort
+    startTime: "2021-07-23T17:01:21Z"
+- apiVersion: v1
+  kind: Pod
+  metadata:
+    annotations:
+      sidecar.istio.io/inject: "false"
+    creationTimestamp: "2021-07-23T17:01:16Z"
+    generateName: apptest-5bldoukc-deployer-
+    labels:
+      controller-uid: 6bd0a630-a138-44b7-a71e-dec3636c77ca
+      job-name: apptest-5bldoukc-deployer
+    managedFields:
+    - apiVersion: v1
+      fieldsType: FieldsV1
+      fieldsV1:
+        f:metadata:
+          f:annotations:
+            .: {}
+            f:sidecar.istio.io/inject: {}
+          f:generateName: {}
+          f:labels:
+            .: {}
+            f:controller-uid: {}
+            f:job-name: {}
+          f:ownerReferences:
+            .: {}
+            k:{"uid":"6bd0a630-a138-44b7-a71e-dec3636c77ca"}:
+              .: {}
+              f:apiVersion: {}
+              f:blockOwnerDeletion: {}
+              f:controller: {}
+              f:kind: {}
+              f:name: {}
+              f:uid: {}
+        f:spec:
+          f:containers:
+            k:{"name":"deployer"}:
+              .: {}
+              f:command: {}
+              f:image: {}
+              f:imagePullPolicy: {}
+              f:name: {}
+              f:resources:
+                .: {}
+                f:requests:
+                  .: {}
+                  f:cpu: {}
+                  f:memory: {}
+              f:terminationMessagePath: {}
+              f:terminationMessagePolicy: {}
+              f:volumeMounts:
+                .: {}
+                k:{"mountPath":"/data/values.yaml"}:
+                  .: {}
+                  f:mountPath: {}
+                  f:name: {}
+                  f:readOnly: {}
+                  f:subPath: {}
+          f:dnsPolicy: {}
+          f:enableServiceLinks: {}
+          f:restartPolicy: {}
+          f:schedulerName: {}
+          f:securityContext: {}
+          f:serviceAccount: {}
+          f:serviceAccountName: {}
+          f:terminationGracePeriodSeconds: {}
+          f:volumes:
+            .: {}
+            k:{"name":"config-volume"}:
+              .: {}
+              f:name: {}
+              f:secret:
+                .: {}
+                f:defaultMode: {}
+                f:secretName: {}
+      manager: kube-controller-manager
+      operation: Update
+      time: "2021-07-23T17:01:16Z"
+    - apiVersion: v1
+      fieldsType: FieldsV1
+      fieldsV1:
+        f:status:
+          f:conditions:
+            k:{"type":"ContainersReady"}:
+              .: {}
+              f:lastProbeTime: {}
+              f:lastTransitionTime: {}
+              f:message: {}
+              f:reason: {}
+              f:status: {}
+              f:type: {}
+            k:{"type":"Initialized"}:
+              .: {}
+              f:lastProbeTime: {}
+              f:lastTransitionTime: {}
+              f:status: {}
+              f:type: {}
+            k:{"type":"Ready"}:
+              .: {}
+              f:lastProbeTime: {}
+              f:lastTransitionTime: {}
+              f:message: {}
+              f:reason: {}
+              f:status: {}
+              f:type: {}
+          f:containerStatuses: {}
+          f:hostIP: {}
+          f:phase: {}
+          f:podIP: {}
+          f:podIPs:
+            .: {}
+            k:{"ip":"10.148.7.35"}:
+              .: {}
+              f:ip: {}
+          f:startTime: {}
+      manager: kubelet
+      operation: Update
+      time: "2021-07-23T17:01:23Z"
+    name: apptest-5bldoukc-deployer-w8jc9
+    namespace: apptest-5bldoukc
+    ownerReferences:
+    - apiVersion: batch/v1
+      blockOwnerDeletion: true
+      controller: true
+      kind: Job
+      name: apptest-5bldoukc-deployer
+      uid: 6bd0a630-a138-44b7-a71e-dec3636c77ca
+    resourceVersion: "65747895"
+    selfLink: /api/v1/namespaces/apptest-5bldoukc/pods/apptest-5bldoukc-deployer-w8jc9
+    uid: 0400274a-fd51-46c6-bd5f-bcf7e6db42fc
+  spec:
+    containers:
+    - command:
+      - /bin/deploy_with_tests.sh
+      env:
+      - name: NEW_RELIC_METADATA_KUBERNETES_CLUSTER_NAME
+        value: marketplace-dev
+      - name: NEW_RELIC_METADATA_KUBERNETES_NODE_NAME
+        valueFrom:
+          fieldRef:
+            apiVersion: v1
+            fieldPath: spec.nodeName
+      - name: NEW_RELIC_METADATA_KUBERNETES_NAMESPACE_NAME
+        valueFrom:
+          fieldRef:
+            apiVersion: v1
+            fieldPath: metadata.namespace
+      - name: NEW_RELIC_METADATA_KUBERNETES_POD_NAME
+        valueFrom:
+          fieldRef:
+            apiVersion: v1
+            fieldPath: metadata.name
+      - name: NEW_RELIC_METADATA_KUBERNETES_CONTAINER_NAME
+        value: deployer
+      - name: NEW_RELIC_METADATA_KUBERNETES_CONTAINER_IMAGE_NAME
+        value: gcr.io/plainsight-public/images/deployer:1.0
+      image: gcr.io/plainsight-public/images/deployer:1.0
+      imagePullPolicy: Always
+      name: deployer
+      resources:
+        requests:
+          cpu: 100m
+          memory: 100Mi
+      terminationMessagePath: /dev/termination-log
+      terminationMessagePolicy: File
+      volumeMounts:
+      - mountPath: /data/values.yaml
+        name: config-volume
+        readOnly: true
+        subPath: values.yaml
+      - mountPath: /var/run/secrets/kubernetes.io/serviceaccount
+        name: apptest-5bldoukc-deployer-sa-token-6cwtx
+        readOnly: true
+    dnsPolicy: ClusterFirst
+    enableServiceLinks: true
+    nodeName: gke-marketplace-dev-default-pool-f6e7d67a-mt1z
+    preemptionPolicy: PreemptLowerPriority
+    priority: 0
+    restartPolicy: Never
+    schedulerName: default-scheduler
+    securityContext: {}
+    serviceAccount: apptest-5bldoukc-deployer-sa
+    serviceAccountName: apptest-5bldoukc-deployer-sa
+    terminationGracePeriodSeconds: 30
+    tolerations:
+    - effect: NoExecute
+      key: node.kubernetes.io/not-ready
+      operator: Exists
+      tolerationSeconds: 300
+    - effect: NoExecute
+      key: node.kubernetes.io/unreachable
+      operator: Exists
+      tolerationSeconds: 300
+    volumes:
+    - name: config-volume
+      secret:
+        defaultMode: 420
+        secretName: apptest-5bldoukc-deployer-config
+    - name: apptest-5bldoukc-deployer-sa-token-6cwtx
+      secret:
+        defaultMode: 420
+        secretName: apptest-5bldoukc-deployer-sa-token-6cwtx
+  status:
+    conditions:
+    - lastProbeTime: null
+      lastTransitionTime: "2021-07-23T17:01:16Z"
+      status: "True"
+      type: Initialized
+    - lastProbeTime: null
+      lastTransitionTime: "2021-07-23T17:01:23Z"
+      message: 'containers with unready status: [deployer]'
+      reason: ContainersNotReady
+      status: "False"
+      type: Ready
+    - lastProbeTime: null
+      lastTransitionTime: "2021-07-23T17:01:23Z"
+      message: 'containers with unready status: [deployer]'
+      reason: ContainersNotReady
+      status: "False"
+      type: ContainersReady
+    - lastProbeTime: null
+      lastTransitionTime: "2021-07-23T17:01:16Z"
+      status: "True"
+      type: PodScheduled
+    containerStatuses:
+    - containerID: containerd://f8dee330fc58bc536cdde3e71c583fd40f69a1fbf9ab385f116df1e6d26370c0
+      image: gcr.io/plainsight-public/images/deployer:1.0
+      imageID: gcr.io/plainsight-public/images/deployer@sha256:cd16192bf1a5b1e4d2a7941ca29526dcd1d907a2335ad9106871c8aecaaf154a
+      lastState: {}
+      name: deployer
+      ready: false
+      restartCount: 0
+      started: false
+      state:
+        terminated:
+          containerID: containerd://f8dee330fc58bc536cdde3e71c583fd40f69a1fbf9ab385f116df1e6d26370c0
+          exitCode: 1
+          finishedAt: "2021-07-23T17:01:22Z"
+          reason: Error
+          startedAt: "2021-07-23T17:01:17Z"
+    hostIP: 10.1.15.202
+    phase: Failed
+    podIP: 10.148.7.35
+    podIPs:
+    - ip: 10.148.7.35
+    qosClass: Burstable
+    startTime: "2021-07-23T17:01:16Z"
+- apiVersion: v1
+  kind: Pod
+  metadata:
+    creationTimestamp: "2021-07-23T17:01:22Z"
+    generateName: apptest-5bldoukc-migrator-
+    labels:
+      app.kubernetes.io/instance: apptest-5bldoukc
+      app.kubernetes.io/managed-by: Helm
+      app.kubernetes.io/name: migrator
+      app.kubernetes.io/version: "1.0"
+      controller-uid: 8c7967ef-53b1-4a9e-82e5-20368b735d02
+      helm.sh/chart: migrator-1.0.0
+      job-name: apptest-5bldoukc-migrator
+    managedFields:
+    - apiVersion: v1
+      fieldsType: FieldsV1
+      fieldsV1:
+        f:metadata:
+          f:generateName: {}
+          f:labels:
+            .: {}
+            f:app.kubernetes.io/instance: {}
+            f:app.kubernetes.io/managed-by: {}
+            f:app.kubernetes.io/name: {}
+            f:app.kubernetes.io/version: {}
+            f:controller-uid: {}
+            f:helm.sh/chart: {}
+            f:job-name: {}
+          f:ownerReferences:
+            .: {}
+            k:{"uid":"8c7967ef-53b1-4a9e-82e5-20368b735d02"}:
+              .: {}
+              f:apiVersion: {}
+              f:blockOwnerDeletion: {}
+              f:controller: {}
+              f:kind: {}
+              f:name: {}
+              f:uid: {}
+        f:spec:
+          f:containers:
+            k:{"name":"migrator"}:
+              .: {}
+              f:command: {}
+              f:env:
+                .: {}
+                k:{"name":"SENSE_PLEASE_DONT_DIE"}:
+                  .: {}
+                  f:name: {}
+                  f:value: {}
+              f:image: {}
+              f:imagePullPolicy: {}
+              f:name: {}
+              f:resources: {}
+              f:terminationMessagePath: {}
+              f:terminationMessagePolicy: {}
+          f:dnsPolicy: {}
+          f:enableServiceLinks: {}
+          f:restartPolicy: {}
+          f:schedulerName: {}
+          f:securityContext: {}
+          f:terminationGracePeriodSeconds: {}
+      manager: kube-controller-manager
+      operation: Update
+      time: "2021-07-23T17:01:21Z"
+    - apiVersion: v1
+      fieldsType: FieldsV1
+      fieldsV1:
+        f:status:
+          f:conditions:
+            k:{"type":"ContainersReady"}:
+              .: {}
+              f:lastProbeTime: {}
+              f:lastTransitionTime: {}
+              f:status: {}
+              f:type: {}
+            k:{"type":"Initialized"}:
+              .: {}
+              f:lastProbeTime: {}
+              f:lastTransitionTime: {}
+              f:status: {}
+              f:type: {}
+            k:{"type":"Ready"}:
+              .: {}
+              f:lastProbeTime: {}
+              f:lastTransitionTime: {}
+              f:status: {}
+              f:type: {}
+          f:containerStatuses: {}
+          f:hostIP: {}
+          f:phase: {}
+          f:podIP: {}
+          f:podIPs:
+            .: {}
+            k:{"ip":"10.148.7.38"}:
+              .: {}
+              f:ip: {}
+          f:startTime: {}
+      manager: kubelet
+      operation: Update
+      time: "2021-07-23T17:01:24Z"
+    name: apptest-5bldoukc-migrator-ckqhk
+    namespace: apptest-5bldoukc
+    ownerReferences:
+    - apiVersion: batch/v1
+      blockOwnerDeletion: true
+      controller: true
+      kind: Job
+      name: apptest-5bldoukc-migrator
+      uid: 8c7967ef-53b1-4a9e-82e5-20368b735d02
+    resourceVersion: "65747912"
+    selfLink: /api/v1/namespaces/apptest-5bldoukc/pods/apptest-5bldoukc-migrator-ckqhk
+    uid: a93c05f7-a5ae-4a96-af1f-a196b18da27d
+  spec:
+    containers:
+    - command:
+      - /bin/migrator
+      env:
+      - name: SENSE_PLEASE_DONT_DIE
+        value: "true"
+      - name: NEW_RELIC_METADATA_KUBERNETES_CLUSTER_NAME
+        value: marketplace-dev
+      - name: NEW_RELIC_METADATA_KUBERNETES_NODE_NAME
+        valueFrom:
+          fieldRef:
+            apiVersion: v1
+            fieldPath: spec.nodeName
+      - name: NEW_RELIC_METADATA_KUBERNETES_NAMESPACE_NAME
+        valueFrom:
+          fieldRef:
+            apiVersion: v1
+            fieldPath: metadata.namespace
+      - name: NEW_RELIC_METADATA_KUBERNETES_POD_NAME
+        valueFrom:
+          fieldRef:
+            apiVersion: v1
+            fieldPath: metadata.name
+      - name: NEW_RELIC_METADATA_KUBERNETES_CONTAINER_NAME
+        value: migrator
+      - name: NEW_RELIC_METADATA_KUBERNETES_CONTAINER_IMAGE_NAME
+        value: gcr.io/plainsight-public/images/migrator:1.0.0
+      image: gcr.io/plainsight-public/images/migrator:1.0.0
+      imagePullPolicy: IfNotPresent
+      name: migrator
+      resources: {}
+      terminationMessagePath: /dev/termination-log
+      terminationMessagePolicy: File
+      volumeMounts:
+      - mountPath: /var/run/secrets/kubernetes.io/serviceaccount
+        name: default-token-mhnwp
+        readOnly: true
+    dnsPolicy: ClusterFirst
+    enableServiceLinks: true
+    nodeName: gke-marketplace-dev-default-pool-f6e7d67a-mt1z
+    preemptionPolicy: PreemptLowerPriority
+    priority: 0
+    restartPolicy: Never
+    schedulerName: default-scheduler
+    securityContext: {}
+    serviceAccount: default
+    serviceAccountName: default
+    terminationGracePeriodSeconds: 30
+    tolerations:
+    - effect: NoExecute
+      key: node.kubernetes.io/not-ready
+      operator: Exists
+      tolerationSeconds: 300
+    - effect: NoExecute
+      key: node.kubernetes.io/unreachable
+      operator: Exists
+      tolerationSeconds: 300
+    volumes:
+    - name: default-token-mhnwp
+      secret:
+        defaultMode: 420
+        secretName: default-token-mhnwp
+  status:
+    conditions:
+    - lastProbeTime: null
+      lastTransitionTime: "2021-07-23T17:01:22Z"
+      status: "True"
+      type: Initialized
+    - lastProbeTime: null
+      lastTransitionTime: "2021-07-23T17:01:24Z"
+      status: "True"
+      type: Ready
+    - lastProbeTime: null
+      lastTransitionTime: "2021-07-23T17:01:24Z"
+      status: "True"
+      type: ContainersReady
+    - lastProbeTime: null
+      lastTransitionTime: "2021-07-23T17:01:22Z"
+      status: "True"
+      type: PodScheduled
+    containerStatuses:
+    - containerID: containerd://b0093928a314319a29a39a62656deb41993b69a39e6b21d0f793a1b40adb0888
+      image: gcr.io/plainsight-public/images/migrator:1.0.0
+      imageID: gcr.io/plainsight-public/images/migrator@sha256:b5e165e53bb4ab3f115c762fc5ae79df668e2b81e2a56576f8430e2a2705a324
+      lastState: {}
+      name: migrator
+      ready: true
+      restartCount: 0
+      started: true
+      state:
+        running:
+          startedAt: "2021-07-23T17:01:24Z"
+    hostIP: 10.1.15.202
+    phase: Running
+    podIP: 10.148.7.38
+    podIPs:
+    - ip: 10.148.7.38
+    qosClass: BestEffort
+    startTime: "2021-07-23T17:01:22Z"
+- apiVersion: v1
+  kind: Service
+  metadata:
+    annotations:
+      cloud.google.com/neg: '{"ingress":true}'
+      kubectl.kubernetes.io/last-applied-configuration: |
+        {"apiVersion":"v1","kind":"Service","metadata":{"annotations":{},"labels":{"app.kubernetes.io/instance":"apptest-5bldoukc","app.kubernetes.io/managed-by":"Helm","app.kubernetes.io/name":"api","app.kubernetes.io/version":"1.0","helm.sh/chart":"api-1.0.0"},"name":"apptest-5bldoukc-api","namespace":"apptest-5bldoukc","ownerReferences":[{"apiVersion":"app.k8s.io/v1beta1","blockOwnerDeletion":true,"kind":"Application","name":"apptest-5bldoukc","uid":"dbf10b50-bff4-4a93-ab27-d579ddd52c8d"}]},"spec":{"ports":[{"name":"http","port":80,"protocol":"TCP","targetPort":"http"}],"selector":{"app.kubernetes.io/instance":"apptest-5bldoukc","app.kubernetes.io/name":"api"},"type":"ClusterIP"}}
+    creationTimestamp: "2021-07-23T17:01:21Z"
+    labels:
+      app.kubernetes.io/instance: apptest-5bldoukc
+      app.kubernetes.io/managed-by: Helm
+      app.kubernetes.io/name: api
+      app.kubernetes.io/version: "1.0"
+      helm.sh/chart: api-1.0.0
+    managedFields:
+    - apiVersion: v1
+      fieldsType: FieldsV1
+      fieldsV1:
+        f:metadata:
+          f:annotations:
+            .: {}
+            f:kubectl.kubernetes.io/last-applied-configuration: {}
+          f:labels:
+            .: {}
+            f:app.kubernetes.io/instance: {}
+            f:app.kubernetes.io/managed-by: {}
+            f:app.kubernetes.io/name: {}
+            f:app.kubernetes.io/version: {}
+            f:helm.sh/chart: {}
+          f:ownerReferences:
+            .: {}
+            k:{"uid":"dbf10b50-bff4-4a93-ab27-d579ddd52c8d"}:
+              .: {}
+              f:apiVersion: {}
+              f:blockOwnerDeletion: {}
+              f:kind: {}
+              f:name: {}
+              f:uid: {}
+        f:spec:
+          f:ports:
+            .: {}
+            k:{"port":80,"protocol":"TCP"}:
+              .: {}
+              f:name: {}
+              f:port: {}
+              f:protocol: {}
+              f:targetPort: {}
+          f:selector:
+            .: {}
+            f:app.kubernetes.io/instance: {}
+            f:app.kubernetes.io/name: {}
+          f:sessionAffinity: {}
+          f:type: {}
+      manager: kubectl
+      operation: Update
+      time: "2021-07-23T17:01:21Z"
+    name: apptest-5bldoukc-api
+    namespace: apptest-5bldoukc
+    ownerReferences:
+    - apiVersion: app.k8s.io/v1beta1
+      blockOwnerDeletion: true
+      kind: Application
+      name: apptest-5bldoukc
+      uid: dbf10b50-bff4-4a93-ab27-d579ddd52c8d
+    resourceVersion: "65747825"
+    selfLink: /api/v1/namespaces/apptest-5bldoukc/services/apptest-5bldoukc-api
+    uid: e63739d2-ddbc-470d-9865-0ad49ef16415
+  spec:
+    clusterIP: 10.152.2.2
+    ports:
+    - name: http
+      port: 80
+      protocol: TCP
+      targetPort: http
+    selector:
+      app.kubernetes.io/instance: apptest-5bldoukc
+      app.kubernetes.io/name: api
+    sessionAffinity: None
+    type: ClusterIP
+  status:
+    loadBalancer: {}
+- apiVersion: v1
+  kind: Service
+  metadata:
+    annotations:
+      cloud.google.com/neg: '{"ingress":true}'
+      kubectl.kubernetes.io/last-applied-configuration: |
+        {"apiVersion":"v1","kind":"Service","metadata":{"annotations":{},"labels":{"app.kubernetes.io/instance":"apptest-5bldoukc","app.kubernetes.io/managed-by":"Helm","app.kubernetes.io/name":"dashboard","app.kubernetes.io/version":"1.0","helm.sh/chart":"dashboard-1.0.0"},"name":"apptest-5bldoukc-dashboard","namespace":"apptest-5bldoukc","ownerReferences":[{"apiVersion":"app.k8s.io/v1beta1","blockOwnerDeletion":true,"kind":"Application","name":"apptest-5bldoukc","uid":"dbf10b50-bff4-4a93-ab27-d579ddd52c8d"}]},"spec":{"ports":[{"name":"http","port":80,"protocol":"TCP","targetPort":"http"}],"selector":{"app.kubernetes.io/instance":"apptest-5bldoukc","app.kubernetes.io/name":"dashboard"},"type":"ClusterIP"}}
+    creationTimestamp: "2021-07-23T17:01:21Z"
+    labels:
+      app.kubernetes.io/instance: apptest-5bldoukc
+      app.kubernetes.io/managed-by: Helm
+      app.kubernetes.io/name: dashboard
+      app.kubernetes.io/version: "1.0"
+      helm.sh/chart: dashboard-1.0.0
+    managedFields:
+    - apiVersion: v1
+      fieldsType: FieldsV1
+      fieldsV1:
+        f:metadata:
+          f:annotations:
+            .: {}
+            f:kubectl.kubernetes.io/last-applied-configuration: {}
+          f:labels:
+            .: {}
+            f:app.kubernetes.io/instance: {}
+            f:app.kubernetes.io/managed-by: {}
+            f:app.kubernetes.io/name: {}
+            f:app.kubernetes.io/version: {}
+            f:helm.sh/chart: {}
+          f:ownerReferences:
+            .: {}
+            k:{"uid":"dbf10b50-bff4-4a93-ab27-d579ddd52c8d"}:
+              .: {}
+              f:apiVersion: {}
+              f:blockOwnerDeletion: {}
+              f:kind: {}
+              f:name: {}
+              f:uid: {}
+        f:spec:
+          f:ports:
+            .: {}
+            k:{"port":80,"protocol":"TCP"}:
+              .: {}
+              f:name: {}
+              f:port: {}
+              f:protocol: {}
+              f:targetPort: {}
+          f:selector:
+            .: {}
+            f:app.kubernetes.io/instance: {}
+            f:app.kubernetes.io/name: {}
+          f:sessionAffinity: {}
+          f:type: {}
+      manager: kubectl
+      operation: Update
+      time: "2021-07-23T17:01:21Z"
+    name: apptest-5bldoukc-dashboard
+    namespace: apptest-5bldoukc
+    ownerReferences:
+    - apiVersion: app.k8s.io/v1beta1
+      blockOwnerDeletion: true
+      kind: Application
+      name: apptest-5bldoukc
+      uid: dbf10b50-bff4-4a93-ab27-d579ddd52c8d
+    resourceVersion: "65747830"
+    selfLink: /api/v1/namespaces/apptest-5bldoukc/services/apptest-5bldoukc-dashboard
+    uid: c1ac6b8b-a783-4352-98fd-c14309a3f769
+  spec:
+    clusterIP: 10.152.13.13
+    ports:
+    - name: http
+      port: 80
+      protocol: TCP
+      targetPort: http
+    selector:
+      app.kubernetes.io/instance: apptest-5bldoukc
+      app.kubernetes.io/name: dashboard
+    sessionAffinity: None
+    type: ClusterIP
+  status:
+    loadBalancer: {}
+- apiVersion: apps/v1
+  kind: Deployment
+  metadata:
+    annotations:
+      deployment.kubernetes.io/revision: "1"
+      kubectl.kubernetes.io/last-applied-configuration: |
+        {"apiVersion":"apps/v1","kind":"Deployment","metadata":{"annotations":{},"labels":{"app.kubernetes.io/instance":"apptest-5bldoukc","app.kubernetes.io/managed-by":"Helm","app.kubernetes.io/name":"api","app.kubernetes.io/version":"1.0","helm.sh/chart":"api-1.0.0"},"name":"apptest-5bldoukc-api","namespace":"apptest-5bldoukc","ownerReferences":[{"apiVersion":"app.k8s.io/v1beta1","blockOwnerDeletion":true,"kind":"Application","name":"apptest-5bldoukc","uid":"dbf10b50-bff4-4a93-ab27-d579ddd52c8d"}]},"spec":{"replicas":1,"selector":{"matchLabels":{"app.kubernetes.io/instance":"apptest-5bldoukc","app.kubernetes.io/name":"api"}},"template":{"metadata":{"labels":{"app.kubernetes.io/instance":"apptest-5bldoukc","app.kubernetes.io/name":"api"}},"spec":{"containers":[{"env":[{"name":"SENSE_PLEASE_DONT_DIE","value":"true"}],"image":"gcr.io/plainsight-public/images/api:1.0.0","imagePullPolicy":"IfNotPresent","livenessProbe":{"httpGet":{"path":"/","port":"http"}},"name":"api","ports":[{"containerPort":80,"name":"http","protocol":"TCP"}],"readinessProbe":{"httpGet":{"path":"/","port":"http"}},"resources":{},"securityContext":{}}],"securityContext":{},"serviceAccountName":"apptest-5bldoukc-api"}}}}
+    creationTimestamp: "2021-07-23T17:01:21Z"
+    generation: 1
+    labels:
+      app.kubernetes.io/instance: apptest-5bldoukc
+      app.kubernetes.io/managed-by: Helm
+      app.kubernetes.io/name: api
+      app.kubernetes.io/version: "1.0"
+      helm.sh/chart: api-1.0.0
+    managedFields:
+    - apiVersion: apps/v1
+      fieldsType: FieldsV1
+      fieldsV1:
+        f:metadata:
+          f:annotations:
+            f:deployment.kubernetes.io/revision: {}
+        f:status:
+          f:conditions:
+            .: {}
+            k:{"type":"Available"}:
+              .: {}
+              f:lastTransitionTime: {}
+              f:lastUpdateTime: {}
+              f:message: {}
+              f:reason: {}
+              f:status: {}
+              f:type: {}
+            k:{"type":"Progressing"}:
+              .: {}
+              f:lastTransitionTime: {}
+              f:lastUpdateTime: {}
+              f:message: {}
+              f:reason: {}
+              f:status: {}
+              f:type: {}
+          f:observedGeneration: {}
+          f:replicas: {}
+          f:unavailableReplicas: {}
+          f:updatedReplicas: {}
+      manager: kube-controller-manager
+      operation: Update
+      time: "2021-07-23T17:01:21Z"
+    - apiVersion: apps/v1
+      fieldsType: FieldsV1
+      fieldsV1:
+        f:metadata:
+          f:annotations:
+            .: {}
+            f:kubectl.kubernetes.io/last-applied-configuration: {}
+          f:labels:
+            .: {}
+            f:app.kubernetes.io/instance: {}
+            f:app.kubernetes.io/managed-by: {}
+            f:app.kubernetes.io/name: {}
+            f:app.kubernetes.io/version: {}
+            f:helm.sh/chart: {}
+          f:ownerReferences:
+            .: {}
+            k:{"uid":"dbf10b50-bff4-4a93-ab27-d579ddd52c8d"}:
+              .: {}
+              f:apiVersion: {}
+              f:blockOwnerDeletion: {}
+              f:kind: {}
+              f:name: {}
+              f:uid: {}
+        f:spec:
+          f:progressDeadlineSeconds: {}
+          f:replicas: {}
+          f:revisionHistoryLimit: {}
+          f:selector:
+            f:matchLabels:
+              .: {}
+              f:app.kubernetes.io/instance: {}
+              f:app.kubernetes.io/name: {}
+          f:strategy:
+            f:rollingUpdate:
+              .: {}
+              f:maxSurge: {}
+              f:maxUnavailable: {}
+            f:type: {}
+          f:template:
+            f:metadata:
+              f:labels:
+                .: {}
+                f:app.kubernetes.io/instance: {}
+                f:app.kubernetes.io/name: {}
+            f:spec:
+              f:containers:
+                k:{"name":"api"}:
+                  .: {}
+                  f:env:
+                    .: {}
+                    k:{"name":"SENSE_PLEASE_DONT_DIE"}:
+                      .: {}
+                      f:name: {}
+                      f:value: {}
+                  f:image: {}
+                  f:imagePullPolicy: {}
+                  f:livenessProbe:
+                    .: {}
+                    f:failureThreshold: {}
+                    f:httpGet:
+                      .: {}
+                      f:path: {}
+                      f:port: {}
+                      f:scheme: {}
+                    f:periodSeconds: {}
+                    f:successThreshold: {}
+                    f:timeoutSeconds: {}
+                  f:name: {}
+                  f:ports:
+                    .: {}
+                    k:{"containerPort":80,"protocol":"TCP"}:
+                      .: {}
+                      f:containerPort: {}
+                      f:name: {}
+                      f:protocol: {}
+                  f:readinessProbe:
+                    .: {}
+                    f:failureThreshold: {}
+                    f:httpGet:
+                      .: {}
+                      f:path: {}
+                      f:port: {}
+                      f:scheme: {}
+                    f:periodSeconds: {}
+                    f:successThreshold: {}
+                    f:timeoutSeconds: {}
+                  f:resources: {}
+                  f:securityContext: {}
+                  f:terminationMessagePath: {}
+                  f:terminationMessagePolicy: {}
+              f:dnsPolicy: {}
+              f:restartPolicy: {}
+              f:schedulerName: {}
+              f:securityContext: {}
+              f:serviceAccount: {}
+              f:serviceAccountName: {}
+              f:terminationGracePeriodSeconds: {}
+      manager: kubectl
+      operation: Update
+      time: "2021-07-23T17:01:21Z"
+    name: apptest-5bldoukc-api
+    namespace: apptest-5bldoukc
+    ownerReferences:
+    - apiVersion: app.k8s.io/v1beta1
+      blockOwnerDeletion: true
+      kind: Application
+      name: apptest-5bldoukc
+      uid: dbf10b50-bff4-4a93-ab27-d579ddd52c8d
+    resourceVersion: "65747855"
+    selfLink: /apis/apps/v1/namespaces/apptest-5bldoukc/deployments/apptest-5bldoukc-api
+    uid: a820bc49-24c4-4666-a96a-2d21925b5f0b
+  spec:
+    progressDeadlineSeconds: 600
+    replicas: 1
+    revisionHistoryLimit: 10
+    selector:
+      matchLabels:
+        app.kubernetes.io/instance: apptest-5bldoukc
+        app.kubernetes.io/name: api
+    strategy:
+      rollingUpdate:
+        maxSurge: 25%
+        maxUnavailable: 25%
+      type: RollingUpdate
+    template:
+      metadata:
+        creationTimestamp: null
+        labels:
+          app.kubernetes.io/instance: apptest-5bldoukc
+          app.kubernetes.io/name: api
+      spec:
+        containers:
+        - env:
+          - name: SENSE_PLEASE_DONT_DIE
+            value: "true"
+          image: gcr.io/plainsight-public/images/api:1.0.0
+          imagePullPolicy: IfNotPresent
+          livenessProbe:
+            failureThreshold: 3
+            httpGet:
+              path: /
+              port: http
+              scheme: HTTP
+            periodSeconds: 10
+            successThreshold: 1
+            timeoutSeconds: 1
+          name: api
+          ports:
+          - containerPort: 80
+            name: http
+            protocol: TCP
+          readinessProbe:
+            failureThreshold: 3
+            httpGet:
+              path: /
+              port: http
+              scheme: HTTP
+            periodSeconds: 10
+            successThreshold: 1
+            timeoutSeconds: 1
+          resources: {}
+          securityContext: {}
+          terminationMessagePath: /dev/termination-log
+          terminationMessagePolicy: File
+        dnsPolicy: ClusterFirst
+        restartPolicy: Always
+        schedulerName: default-scheduler
+        securityContext: {}
+        serviceAccount: apptest-5bldoukc-api
+        serviceAccountName: apptest-5bldoukc-api
+        terminationGracePeriodSeconds: 30
+  status:
+    conditions:
+    - lastTransitionTime: "2021-07-23T17:01:21Z"
+      lastUpdateTime: "2021-07-23T17:01:21Z"
+      message: Deployment does not have minimum availability.
+      reason: MinimumReplicasUnavailable
+      status: "False"
+      type: Available
+    - lastTransitionTime: "2021-07-23T17:01:21Z"
+      lastUpdateTime: "2021-07-23T17:01:21Z"
+      message: ReplicaSet "apptest-5bldoukc-api-6844947664" is progressing.
+      reason: ReplicaSetUpdated
+      status: "True"
+      type: Progressing
+    observedGeneration: 1
+    replicas: 1
+    unavailableReplicas: 1
+    updatedReplicas: 1
+- apiVersion: apps/v1
+  kind: Deployment
+  metadata:
+    annotations:
+      deployment.kubernetes.io/revision: "1"
+      kubectl.kubernetes.io/last-applied-configuration: |
+        {"apiVersion":"apps/v1","kind":"Deployment","metadata":{"annotations":{},"labels":{"app.kubernetes.io/instance":"apptest-5bldoukc","app.kubernetes.io/managed-by":"Helm","app.kubernetes.io/name":"billing","app.kubernetes.io/version":"1.0","helm.sh/chart":"billing-1.0.0"},"name":"apptest-5bldoukc-billing","namespace":"apptest-5bldoukc","ownerReferences":[{"apiVersion":"app.k8s.io/v1beta1","blockOwnerDeletion":true,"kind":"Application","name":"apptest-5bldoukc","uid":"dbf10b50-bff4-4a93-ab27-d579ddd52c8d"}]},"spec":{"replicas":1,"selector":{"matchLabels":{"app.kubernetes.io/instance":"apptest-5bldoukc","app.kubernetes.io/name":"billing"}},"template":{"metadata":{"labels":{"app.kubernetes.io/instance":"apptest-5bldoukc","app.kubernetes.io/name":"billing"}},"spec":{"containers":[{"env":[{"name":"SENSE_PLEASE_DONT_DIE","value":"true"}],"image":"gcr.io/plainsight-public/images/billing:1.0.0","imagePullPolicy":"IfNotPresent","livenessProbe":{"httpGet":{"path":"/","port":"http"}},"name":"billing","ports":[{"containerPort":80,"name":"http","protocol":"TCP"}],"readinessProbe":{"httpGet":{"path":"/","port":"http"}},"resources":{},"securityContext":{}}],"securityContext":{},"serviceAccountName":"apptest-5bldoukc-billing"}}}}
+    creationTimestamp: "2021-07-23T17:01:21Z"
+    generation: 1
+    labels:
+      app.kubernetes.io/instance: apptest-5bldoukc
+      app.kubernetes.io/managed-by: Helm
+      app.kubernetes.io/name: billing
+      app.kubernetes.io/version: "1.0"
+      helm.sh/chart: billing-1.0.0
+    managedFields:
+    - apiVersion: apps/v1
+      fieldsType: FieldsV1
+      fieldsV1:
+        f:metadata:
+          f:annotations:
+            f:deployment.kubernetes.io/revision: {}
+        f:status:
+          f:conditions:
+            .: {}
+            k:{"type":"Available"}:
+              .: {}
+              f:lastTransitionTime: {}
+              f:lastUpdateTime: {}
+              f:message: {}
+              f:reason: {}
+              f:status: {}
+              f:type: {}
+            k:{"type":"Progressing"}:
+              .: {}
+              f:lastTransitionTime: {}
+              f:lastUpdateTime: {}
+              f:message: {}
+              f:reason: {}
+              f:status: {}
+              f:type: {}
+          f:observedGeneration: {}
+          f:replicas: {}
+          f:unavailableReplicas: {}
+          f:updatedReplicas: {}
+      manager: kube-controller-manager
+      operation: Update
+      time: "2021-07-23T17:01:21Z"
+    - apiVersion: apps/v1
+      fieldsType: FieldsV1
+      fieldsV1:
+        f:metadata:
+          f:annotations:
+            .: {}
+            f:kubectl.kubernetes.io/last-applied-configuration: {}
+          f:labels:
+            .: {}
+            f:app.kubernetes.io/instance: {}
+            f:app.kubernetes.io/managed-by: {}
+            f:app.kubernetes.io/name: {}
+            f:app.kubernetes.io/version: {}
+            f:helm.sh/chart: {}
+          f:ownerReferences:
+            .: {}
+            k:{"uid":"dbf10b50-bff4-4a93-ab27-d579ddd52c8d"}:
+              .: {}
+              f:apiVersion: {}
+              f:blockOwnerDeletion: {}
+              f:kind: {}
+              f:name: {}
+              f:uid: {}
+        f:spec:
+          f:progressDeadlineSeconds: {}
+          f:replicas: {}
+          f:revisionHistoryLimit: {}
+          f:selector:
+            f:matchLabels:
+              .: {}
+              f:app.kubernetes.io/instance: {}
+              f:app.kubernetes.io/name: {}
+          f:strategy:
+            f:rollingUpdate:
+              .: {}
+              f:maxSurge: {}
+              f:maxUnavailable: {}
+            f:type: {}
+          f:template:
+            f:metadata:
+              f:labels:
+                .: {}
+                f:app.kubernetes.io/instance: {}
+                f:app.kubernetes.io/name: {}
+            f:spec:
+              f:containers:
+                k:{"name":"billing"}:
+                  .: {}
+                  f:env:
+                    .: {}
+                    k:{"name":"SENSE_PLEASE_DONT_DIE"}:
+                      .: {}
+                      f:name: {}
+                      f:value: {}
+                  f:image: {}
+                  f:imagePullPolicy: {}
+                  f:livenessProbe:
+                    .: {}
+                    f:failureThreshold: {}
+                    f:httpGet:
+                      .: {}
+                      f:path: {}
+                      f:port: {}
+                      f:scheme: {}
+                    f:periodSeconds: {}
+                    f:successThreshold: {}
+                    f:timeoutSeconds: {}
+                  f:name: {}
+                  f:ports:
+                    .: {}
+                    k:{"containerPort":80,"protocol":"TCP"}:
+                      .: {}
+                      f:containerPort: {}
+                      f:name: {}
+                      f:protocol: {}
+                  f:readinessProbe:
+                    .: {}
+                    f:failureThreshold: {}
+                    f:httpGet:
+                      .: {}
+                      f:path: {}
+                      f:port: {}
+                      f:scheme: {}
+                    f:periodSeconds: {}
+                    f:successThreshold: {}
+                    f:timeoutSeconds: {}
+                  f:resources: {}
+                  f:securityContext: {}
+                  f:terminationMessagePath: {}
+                  f:terminationMessagePolicy: {}
+              f:dnsPolicy: {}
+              f:restartPolicy: {}
+              f:schedulerName: {}
+              f:securityContext: {}
+              f:serviceAccount: {}
+              f:serviceAccountName: {}
+              f:terminationGracePeriodSeconds: {}
+      manager: kubectl
+      operation: Update
+      time: "2021-07-23T17:01:21Z"
+    name: apptest-5bldoukc-billing
+    namespace: apptest-5bldoukc
+    ownerReferences:
+    - apiVersion: app.k8s.io/v1beta1
+      blockOwnerDeletion: true
+      kind: Application
+      name: apptest-5bldoukc
+      uid: dbf10b50-bff4-4a93-ab27-d579ddd52c8d
+    resourceVersion: "65747861"
+    selfLink: /apis/apps/v1/namespaces/apptest-5bldoukc/deployments/apptest-5bldoukc-billing
+    uid: 09a9e47a-a184-45a9-896f-625f29ca9011
+  spec:
+    progressDeadlineSeconds: 600
+    replicas: 1
+    revisionHistoryLimit: 10
+    selector:
+      matchLabels:
+        app.kubernetes.io/instance: apptest-5bldoukc
+        app.kubernetes.io/name: billing
+    strategy:
+      rollingUpdate:
+        maxSurge: 25%
+        maxUnavailable: 25%
+      type: RollingUpdate
+    template:
+      metadata:
+        creationTimestamp: null
+        labels:
+          app.kubernetes.io/instance: apptest-5bldoukc
+          app.kubernetes.io/name: billing
+      spec:
+        containers:
+        - env:
+          - name: SENSE_PLEASE_DONT_DIE
+            value: "true"
+          image: gcr.io/plainsight-public/images/billing:1.0.0
+          imagePullPolicy: IfNotPresent
+          livenessProbe:
+            failureThreshold: 3
+            httpGet:
+              path: /
+              port: http
+              scheme: HTTP
+            periodSeconds: 10
+            successThreshold: 1
+            timeoutSeconds: 1
+          name: billing
+          ports:
+          - containerPort: 80
+            name: http
+            protocol: TCP
+          readinessProbe:
+            failureThreshold: 3
+            httpGet:
+              path: /
+              port: http
+              scheme: HTTP
+            periodSeconds: 10
+            successThreshold: 1
+            timeoutSeconds: 1
+          resources: {}
+          securityContext: {}
+          terminationMessagePath: /dev/termination-log
+          terminationMessagePolicy: File
+        dnsPolicy: ClusterFirst
+        restartPolicy: Always
+        schedulerName: default-scheduler
+        securityContext: {}
+        serviceAccount: apptest-5bldoukc-billing
+        serviceAccountName: apptest-5bldoukc-billing
+        terminationGracePeriodSeconds: 30
+  status:
+    conditions:
+    - lastTransitionTime: "2021-07-23T17:01:21Z"
+      lastUpdateTime: "2021-07-23T17:01:21Z"
+      message: Deployment does not have minimum availability.
+      reason: MinimumReplicasUnavailable
+      status: "False"
+      type: Available
+    - lastTransitionTime: "2021-07-23T17:01:21Z"
+      lastUpdateTime: "2021-07-23T17:01:21Z"
+      message: ReplicaSet "apptest-5bldoukc-billing-74c68f4cff" is progressing.
+      reason: ReplicaSetUpdated
+      status: "True"
+      type: Progressing
+    observedGeneration: 1
+    replicas: 1
+    unavailableReplicas: 1
+    updatedReplicas: 1
+- apiVersion: apps/v1
+  kind: Deployment
+  metadata:
+    annotations:
+      deployment.kubernetes.io/revision: "1"
+      kubectl.kubernetes.io/last-applied-configuration: |
+        {"apiVersion":"apps/v1","kind":"Deployment","metadata":{"annotations":{},"labels":{"app.kubernetes.io/instance":"apptest-5bldoukc","app.kubernetes.io/managed-by":"Helm","app.kubernetes.io/name":"dashboard","app.kubernetes.io/version":"1.0","helm.sh/chart":"dashboard-1.0.0"},"name":"apptest-5bldoukc-dashboard","namespace":"apptest-5bldoukc","ownerReferences":[{"apiVersion":"app.k8s.io/v1beta1","blockOwnerDeletion":true,"kind":"Application","name":"apptest-5bldoukc","uid":"dbf10b50-bff4-4a93-ab27-d579ddd52c8d"}]},"spec":{"replicas":1,"selector":{"matchLabels":{"app.kubernetes.io/instance":"apptest-5bldoukc","app.kubernetes.io/name":"dashboard"}},"template":{"metadata":{"labels":{"app.kubernetes.io/instance":"apptest-5bldoukc","app.kubernetes.io/name":"dashboard"}},"spec":{"containers":[{"image":"gcr.io/plainsight-public/images/dashboard:1.0.0","imagePullPolicy":"IfNotPresent","livenessProbe":{"httpGet":{"path":"/","port":"http"}},"name":"dashboard","ports":[{"containerPort":80,"name":"http","protocol":"TCP"}],"readinessProbe":{"httpGet":{"path":"/","port":"http"}},"resources":{},"securityContext":{}}],"securityContext":{},"serviceAccountName":"apptest-5bldoukc-dashboard"}}}}
+    creationTimestamp: "2021-07-23T17:01:21Z"
+    generation: 1
+    labels:
+      app.kubernetes.io/instance: apptest-5bldoukc
+      app.kubernetes.io/managed-by: Helm
+      app.kubernetes.io/name: dashboard
+      app.kubernetes.io/version: "1.0"
+      helm.sh/chart: dashboard-1.0.0
+    managedFields:
+    - apiVersion: apps/v1
+      fieldsType: FieldsV1
+      fieldsV1:
+        f:metadata:
+          f:annotations:
+            .: {}
+            f:kubectl.kubernetes.io/last-applied-configuration: {}
+          f:labels:
+            .: {}
+            f:app.kubernetes.io/instance: {}
+            f:app.kubernetes.io/managed-by: {}
+            f:app.kubernetes.io/name: {}
+            f:app.kubernetes.io/version: {}
+            f:helm.sh/chart: {}
+          f:ownerReferences:
+            .: {}
+            k:{"uid":"dbf10b50-bff4-4a93-ab27-d579ddd52c8d"}:
+              .: {}
+              f:apiVersion: {}
+              f:blockOwnerDeletion: {}
+              f:kind: {}
+              f:name: {}
+              f:uid: {}
+        f:spec:
+          f:progressDeadlineSeconds: {}
+          f:replicas: {}
+          f:revisionHistoryLimit: {}
+          f:selector:
+            f:matchLabels:
+              .: {}
+              f:app.kubernetes.io/instance: {}
+              f:app.kubernetes.io/name: {}
+          f:strategy:
+            f:rollingUpdate:
+              .: {}
+              f:maxSurge: {}
+              f:maxUnavailable: {}
+            f:type: {}
+          f:template:
+            f:metadata:
+              f:labels:
+                .: {}
+                f:app.kubernetes.io/instance: {}
+                f:app.kubernetes.io/name: {}
+            f:spec:
+              f:containers:
+                k:{"name":"dashboard"}:
+                  .: {}
+                  f:image: {}
+                  f:imagePullPolicy: {}
+                  f:livenessProbe:
+                    .: {}
+                    f:failureThreshold: {}
+                    f:httpGet:
+                      .: {}
+                      f:path: {}
+                      f:port: {}
+                      f:scheme: {}
+                    f:periodSeconds: {}
+                    f:successThreshold: {}
+                    f:timeoutSeconds: {}
+                  f:name: {}
+                  f:ports:
+                    .: {}
+                    k:{"containerPort":80,"protocol":"TCP"}:
+                      .: {}
+                      f:containerPort: {}
+                      f:name: {}
+                      f:protocol: {}
+                  f:readinessProbe:
+                    .: {}
+                    f:failureThreshold: {}
+                    f:httpGet:
+                      .: {}
+                      f:path: {}
+                      f:port: {}
+                      f:scheme: {}
+                    f:periodSeconds: {}
+                    f:successThreshold: {}
+                    f:timeoutSeconds: {}
+                  f:resources: {}
+                  f:securityContext: {}
+                  f:terminationMessagePath: {}
+                  f:terminationMessagePolicy: {}
+              f:dnsPolicy: {}
+              f:restartPolicy: {}
+              f:schedulerName: {}
+              f:securityContext: {}
+              f:serviceAccount: {}
+              f:serviceAccountName: {}
+              f:terminationGracePeriodSeconds: {}
+      manager: kubectl
+      operation: Update
+      time: "2021-07-23T17:01:21Z"
+    - apiVersion: apps/v1
+      fieldsType: FieldsV1
+      fieldsV1:
+        f:metadata:
+          f:annotations:
+            f:deployment.kubernetes.io/revision: {}
+        f:status:
+          f:availableReplicas: {}
+          f:conditions:
+            .: {}
+            k:{"type":"Available"}:
+              .: {}
+              f:lastTransitionTime: {}
+              f:lastUpdateTime: {}
+              f:message: {}
+              f:reason: {}
+              f:status: {}
+              f:type: {}
+            k:{"type":"Progressing"}:
+              .: {}
+              f:lastTransitionTime: {}
+              f:lastUpdateTime: {}
+              f:message: {}
+              f:reason: {}
+              f:status: {}
+              f:type: {}
+          f:observedGeneration: {}
+          f:readyReplicas: {}
+          f:replicas: {}
+          f:updatedReplicas: {}
+      manager: kube-controller-manager
+      operation: Update
+      time: "2021-07-23T17:01:26Z"
+    name: apptest-5bldoukc-dashboard
+    namespace: apptest-5bldoukc
+    ownerReferences:
+    - apiVersion: app.k8s.io/v1beta1
+      blockOwnerDeletion: true
+      kind: Application
+      name: apptest-5bldoukc
+      uid: dbf10b50-bff4-4a93-ab27-d579ddd52c8d
+    resourceVersion: "65747931"
+    selfLink: /apis/apps/v1/namespaces/apptest-5bldoukc/deployments/apptest-5bldoukc-dashboard
+    uid: 59d3716d-3f52-40db-8d41-1ce0038e1f75
+  spec:
+    progressDeadlineSeconds: 600
+    replicas: 1
+    revisionHistoryLimit: 10
+    selector:
+      matchLabels:
+        app.kubernetes.io/instance: apptest-5bldoukc
+        app.kubernetes.io/name: dashboard
+    strategy:
+      rollingUpdate:
+        maxSurge: 25%
+        maxUnavailable: 25%
+      type: RollingUpdate
+    template:
+      metadata:
+        creationTimestamp: null
+        labels:
+          app.kubernetes.io/instance: apptest-5bldoukc
+          app.kubernetes.io/name: dashboard
+      spec:
+        containers:
+        - image: gcr.io/plainsight-public/images/dashboard:1.0.0
+          imagePullPolicy: IfNotPresent
+          livenessProbe:
+            failureThreshold: 3
+            httpGet:
+              path: /
+              port: http
+              scheme: HTTP
+            periodSeconds: 10
+            successThreshold: 1
+            timeoutSeconds: 1
+          name: dashboard
+          ports:
+          - containerPort: 80
+            name: http
+            protocol: TCP
+          readinessProbe:
+            failureThreshold: 3
+            httpGet:
+              path: /
+              port: http
+              scheme: HTTP
+            periodSeconds: 10
+            successThreshold: 1
+            timeoutSeconds: 1
+          resources: {}
+          securityContext: {}
+          terminationMessagePath: /dev/termination-log
+          terminationMessagePolicy: File
+        dnsPolicy: ClusterFirst
+        restartPolicy: Always
+        schedulerName: default-scheduler
+        securityContext: {}
+        serviceAccount: apptest-5bldoukc-dashboard
+        serviceAccountName: apptest-5bldoukc-dashboard
+        terminationGracePeriodSeconds: 30
+  status:
+    availableReplicas: 1
+    conditions:
+    - lastTransitionTime: "2021-07-23T17:01:26Z"
+      lastUpdateTime: "2021-07-23T17:01:26Z"
+      message: Deployment has minimum availability.
+      reason: MinimumReplicasAvailable
+      status: "True"
+      type: Available
+    - lastTransitionTime: "2021-07-23T17:01:21Z"
+      lastUpdateTime: "2021-07-23T17:01:26Z"
+      message: ReplicaSet "apptest-5bldoukc-dashboard-64c969b98" has successfully
+        progressed.
+      reason: NewReplicaSetAvailable
+      status: "True"
+      type: Progressing
+    observedGeneration: 1
+    readyReplicas: 1
+    replicas: 1
+    updatedReplicas: 1
+- apiVersion: apps/v1
+  kind: ReplicaSet
+  metadata:
+    annotations:
+      deployment.kubernetes.io/desired-replicas: "1"
+      deployment.kubernetes.io/max-replicas: "2"
+      deployment.kubernetes.io/revision: "1"
+    creationTimestamp: "2021-07-23T17:01:21Z"
+    generation: 1
+    labels:
+      app.kubernetes.io/instance: apptest-5bldoukc
+      app.kubernetes.io/name: api
+      pod-template-hash: "6844947664"
+    managedFields:
+    - apiVersion: apps/v1
+      fieldsType: FieldsV1
+      fieldsV1:
+        f:metadata:
+          f:annotations:
+            .: {}
+            f:deployment.kubernetes.io/desired-replicas: {}
+            f:deployment.kubernetes.io/max-replicas: {}
+            f:deployment.kubernetes.io/revision: {}
+          f:labels:
+            .: {}
+            f:app.kubernetes.io/instance: {}
+            f:app.kubernetes.io/name: {}
+            f:pod-template-hash: {}
+          f:ownerReferences:
+            .: {}
+            k:{"uid":"a820bc49-24c4-4666-a96a-2d21925b5f0b"}:
+              .: {}
+              f:apiVersion: {}
+              f:blockOwnerDeletion: {}
+              f:controller: {}
+              f:kind: {}
+              f:name: {}
+              f:uid: {}
+        f:spec:
+          f:replicas: {}
+          f:selector:
+            f:matchLabels:
+              .: {}
+              f:app.kubernetes.io/instance: {}
+              f:app.kubernetes.io/name: {}
+              f:pod-template-hash: {}
+          f:template:
+            f:metadata:
+              f:labels:
+                .: {}
+                f:app.kubernetes.io/instance: {}
+                f:app.kubernetes.io/name: {}
+                f:pod-template-hash: {}
+            f:spec:
+              f:containers:
+                k:{"name":"api"}:
+                  .: {}
+                  f:env:
+                    .: {}
+                    k:{"name":"SENSE_PLEASE_DONT_DIE"}:
+                      .: {}
+                      f:name: {}
+                      f:value: {}
+                  f:image: {}
+                  f:imagePullPolicy: {}
+                  f:livenessProbe:
+                    .: {}
+                    f:failureThreshold: {}
+                    f:httpGet:
+                      .: {}
+                      f:path: {}
+                      f:port: {}
+                      f:scheme: {}
+                    f:periodSeconds: {}
+                    f:successThreshold: {}
+                    f:timeoutSeconds: {}
+                  f:name: {}
+                  f:ports:
+                    .: {}
+                    k:{"containerPort":80,"protocol":"TCP"}:
+                      .: {}
+                      f:containerPort: {}
+                      f:name: {}
+                      f:protocol: {}
+                  f:readinessProbe:
+                    .: {}
+                    f:failureThreshold: {}
+                    f:httpGet:
+                      .: {}
+                      f:path: {}
+                      f:port: {}
+                      f:scheme: {}
+                    f:periodSeconds: {}
+                    f:successThreshold: {}
+                    f:timeoutSeconds: {}
+                  f:resources: {}
+                  f:securityContext: {}
+                  f:terminationMessagePath: {}
+                  f:terminationMessagePolicy: {}
+              f:dnsPolicy: {}
+              f:restartPolicy: {}
+              f:schedulerName: {}
+              f:securityContext: {}
+              f:serviceAccount: {}
+              f:serviceAccountName: {}
+              f:terminationGracePeriodSeconds: {}
+        f:status:
+          f:fullyLabeledReplicas: {}
+          f:observedGeneration: {}
+          f:replicas: {}
+      manager: kube-controller-manager
+      operation: Update
+      time: "2021-07-23T17:01:21Z"
+    name: apptest-5bldoukc-api-6844947664
+    namespace: apptest-5bldoukc
+    ownerReferences:
+    - apiVersion: apps/v1
+      blockOwnerDeletion: true
+      controller: true
+      kind: Deployment
+      name: apptest-5bldoukc-api
+      uid: a820bc49-24c4-4666-a96a-2d21925b5f0b
+    resourceVersion: "65747848"
+    selfLink: /apis/apps/v1/namespaces/apptest-5bldoukc/replicasets/apptest-5bldoukc-api-6844947664
+    uid: ca77f7fc-dcaf-44b9-83a6-1ac2e9fd88af
+  spec:
+    replicas: 1
+    selector:
+      matchLabels:
+        app.kubernetes.io/instance: apptest-5bldoukc
+        app.kubernetes.io/name: api
+        pod-template-hash: "6844947664"
+    template:
+      metadata:
+        creationTimestamp: null
+        labels:
+          app.kubernetes.io/instance: apptest-5bldoukc
+          app.kubernetes.io/name: api
+          pod-template-hash: "6844947664"
+      spec:
+        containers:
+        - env:
+          - name: SENSE_PLEASE_DONT_DIE
+            value: "true"
+          image: gcr.io/plainsight-public/images/api:1.0.0
+          imagePullPolicy: IfNotPresent
+          livenessProbe:
+            failureThreshold: 3
+            httpGet:
+              path: /
+              port: http
+              scheme: HTTP
+            periodSeconds: 10
+            successThreshold: 1
+            timeoutSeconds: 1
+          name: api
+          ports:
+          - containerPort: 80
+            name: http
+            protocol: TCP
+          readinessProbe:
+            failureThreshold: 3
+            httpGet:
+              path: /
+              port: http
+              scheme: HTTP
+            periodSeconds: 10
+            successThreshold: 1
+            timeoutSeconds: 1
+          resources: {}
+          securityContext: {}
+          terminationMessagePath: /dev/termination-log
+          terminationMessagePolicy: File
+        dnsPolicy: ClusterFirst
+        restartPolicy: Always
+        schedulerName: default-scheduler
+        securityContext: {}
+        serviceAccount: apptest-5bldoukc-api
+        serviceAccountName: apptest-5bldoukc-api
+        terminationGracePeriodSeconds: 30
+  status:
+    fullyLabeledReplicas: 1
+    observedGeneration: 1
+    replicas: 1
+- apiVersion: apps/v1
+  kind: ReplicaSet
+  metadata:
+    annotations:
+      deployment.kubernetes.io/desired-replicas: "1"
+      deployment.kubernetes.io/max-replicas: "2"
+      deployment.kubernetes.io/revision: "1"
+    creationTimestamp: "2021-07-23T17:01:21Z"
+    generation: 1
+    labels:
+      app.kubernetes.io/instance: apptest-5bldoukc
+      app.kubernetes.io/name: billing
+      pod-template-hash: 74c68f4cff
+    managedFields:
+    - apiVersion: apps/v1
+      fieldsType: FieldsV1
+      fieldsV1:
+        f:metadata:
+          f:annotations:
+            .: {}
+            f:deployment.kubernetes.io/desired-replicas: {}
+            f:deployment.kubernetes.io/max-replicas: {}
+            f:deployment.kubernetes.io/revision: {}
+          f:labels:
+            .: {}
+            f:app.kubernetes.io/instance: {}
+            f:app.kubernetes.io/name: {}
+            f:pod-template-hash: {}
+          f:ownerReferences:
+            .: {}
+            k:{"uid":"09a9e47a-a184-45a9-896f-625f29ca9011"}:
+              .: {}
+              f:apiVersion: {}
+              f:blockOwnerDeletion: {}
+              f:controller: {}
+              f:kind: {}
+              f:name: {}
+              f:uid: {}
+        f:spec:
+          f:replicas: {}
+          f:selector:
+            f:matchLabels:
+              .: {}
+              f:app.kubernetes.io/instance: {}
+              f:app.kubernetes.io/name: {}
+              f:pod-template-hash: {}
+          f:template:
+            f:metadata:
+              f:labels:
+                .: {}
+                f:app.kubernetes.io/instance: {}
+                f:app.kubernetes.io/name: {}
+                f:pod-template-hash: {}
+            f:spec:
+              f:containers:
+                k:{"name":"billing"}:
+                  .: {}
+                  f:env:
+                    .: {}
+                    k:{"name":"SENSE_PLEASE_DONT_DIE"}:
+                      .: {}
+                      f:name: {}
+                      f:value: {}
+                  f:image: {}
+                  f:imagePullPolicy: {}
+                  f:livenessProbe:
+                    .: {}
+                    f:failureThreshold: {}
+                    f:httpGet:
+                      .: {}
+                      f:path: {}
+                      f:port: {}
+                      f:scheme: {}
+                    f:periodSeconds: {}
+                    f:successThreshold: {}
+                    f:timeoutSeconds: {}
+                  f:name: {}
+                  f:ports:
+                    .: {}
+                    k:{"containerPort":80,"protocol":"TCP"}:
+                      .: {}
+                      f:containerPort: {}
+                      f:name: {}
+                      f:protocol: {}
+                  f:readinessProbe:
+                    .: {}
+                    f:failureThreshold: {}
+                    f:httpGet:
+                      .: {}
+                      f:path: {}
+                      f:port: {}
+                      f:scheme: {}
+                    f:periodSeconds: {}
+                    f:successThreshold: {}
+                    f:timeoutSeconds: {}
+                  f:resources: {}
+                  f:securityContext: {}
+                  f:terminationMessagePath: {}
+                  f:terminationMessagePolicy: {}
+              f:dnsPolicy: {}
+              f:restartPolicy: {}
+              f:schedulerName: {}
+              f:securityContext: {}
+              f:serviceAccount: {}
+              f:serviceAccountName: {}
+              f:terminationGracePeriodSeconds: {}
+        f:status:
+          f:fullyLabeledReplicas: {}
+          f:observedGeneration: {}
+          f:replicas: {}
+      manager: kube-controller-manager
+      operation: Update
+      time: "2021-07-23T17:01:21Z"
+    name: apptest-5bldoukc-billing-74c68f4cff
+    namespace: apptest-5bldoukc
+    ownerReferences:
+    - apiVersion: apps/v1
+      blockOwnerDeletion: true
+      controller: true
+      kind: Deployment
+      name: apptest-5bldoukc-billing
+      uid: 09a9e47a-a184-45a9-896f-625f29ca9011
+    resourceVersion: "65747858"
+    selfLink: /apis/apps/v1/namespaces/apptest-5bldoukc/replicasets/apptest-5bldoukc-billing-74c68f4cff
+    uid: 6a0c17a3-3402-4243-af3e-ffa4ead77904
+  spec:
+    replicas: 1
+    selector:
+      matchLabels:
+        app.kubernetes.io/instance: apptest-5bldoukc
+        app.kubernetes.io/name: billing
+        pod-template-hash: 74c68f4cff
+    template:
+      metadata:
+        creationTimestamp: null
+        labels:
+          app.kubernetes.io/instance: apptest-5bldoukc
+          app.kubernetes.io/name: billing
+          pod-template-hash: 74c68f4cff
+      spec:
+        containers:
+        - env:
+          - name: SENSE_PLEASE_DONT_DIE
+            value: "true"
+          image: gcr.io/plainsight-public/images/billing:1.0.0
+          imagePullPolicy: IfNotPresent
+          livenessProbe:
+            failureThreshold: 3
+            httpGet:
+              path: /
+              port: http
+              scheme: HTTP
+            periodSeconds: 10
+            successThreshold: 1
+            timeoutSeconds: 1
+          name: billing
+          ports:
+          - containerPort: 80
+            name: http
+            protocol: TCP
+          readinessProbe:
+            failureThreshold: 3
+            httpGet:
+              path: /
+              port: http
+              scheme: HTTP
+            periodSeconds: 10
+            successThreshold: 1
+            timeoutSeconds: 1
+          resources: {}
+          securityContext: {}
+          terminationMessagePath: /dev/termination-log
+          terminationMessagePolicy: File
+        dnsPolicy: ClusterFirst
+        restartPolicy: Always
+        schedulerName: default-scheduler
+        securityContext: {}
+        serviceAccount: apptest-5bldoukc-billing
+        serviceAccountName: apptest-5bldoukc-billing
+        terminationGracePeriodSeconds: 30
+  status:
+    fullyLabeledReplicas: 1
+    observedGeneration: 1
+    replicas: 1
+- apiVersion: apps/v1
+  kind: ReplicaSet
+  metadata:
+    annotations:
+      deployment.kubernetes.io/desired-replicas: "1"
+      deployment.kubernetes.io/max-replicas: "2"
+      deployment.kubernetes.io/revision: "1"
+    creationTimestamp: "2021-07-23T17:01:21Z"
+    generation: 1
+    labels:
+      app.kubernetes.io/instance: apptest-5bldoukc
+      app.kubernetes.io/name: dashboard
+      pod-template-hash: 64c969b98
+    managedFields:
+    - apiVersion: apps/v1
+      fieldsType: FieldsV1
+      fieldsV1:
+        f:metadata:
+          f:annotations:
+            .: {}
+            f:deployment.kubernetes.io/desired-replicas: {}
+            f:deployment.kubernetes.io/max-replicas: {}
+            f:deployment.kubernetes.io/revision: {}
+          f:labels:
+            .: {}
+            f:app.kubernetes.io/instance: {}
+            f:app.kubernetes.io/name: {}
+            f:pod-template-hash: {}
+          f:ownerReferences:
+            .: {}
+            k:{"uid":"59d3716d-3f52-40db-8d41-1ce0038e1f75"}:
+              .: {}
+              f:apiVersion: {}
+              f:blockOwnerDeletion: {}
+              f:controller: {}
+              f:kind: {}
+              f:name: {}
+              f:uid: {}
+        f:spec:
+          f:replicas: {}
+          f:selector:
+            f:matchLabels:
+              .: {}
+              f:app.kubernetes.io/instance: {}
+              f:app.kubernetes.io/name: {}
+              f:pod-template-hash: {}
+          f:template:
+            f:metadata:
+              f:labels:
+                .: {}
+                f:app.kubernetes.io/instance: {}
+                f:app.kubernetes.io/name: {}
+                f:pod-template-hash: {}
+            f:spec:
+              f:containers:
+                k:{"name":"dashboard"}:
+                  .: {}
+                  f:image: {}
+                  f:imagePullPolicy: {}
+                  f:livenessProbe:
+                    .: {}
+                    f:failureThreshold: {}
+                    f:httpGet:
+                      .: {}
+                      f:path: {}
+                      f:port: {}
+                      f:scheme: {}
+                    f:periodSeconds: {}
+                    f:successThreshold: {}
+                    f:timeoutSeconds: {}
+                  f:name: {}
+                  f:ports:
+                    .: {}
+                    k:{"containerPort":80,"protocol":"TCP"}:
+                      .: {}
+                      f:containerPort: {}
+                      f:name: {}
+                      f:protocol: {}
+                  f:readinessProbe:
+                    .: {}
+                    f:failureThreshold: {}
+                    f:httpGet:
+                      .: {}
+                      f:path: {}
+                      f:port: {}
+                      f:scheme: {}
+                    f:periodSeconds: {}
+                    f:successThreshold: {}
+                    f:timeoutSeconds: {}
+                  f:resources: {}
+                  f:securityContext: {}
+                  f:terminationMessagePath: {}
+                  f:terminationMessagePolicy: {}
+              f:dnsPolicy: {}
+              f:restartPolicy: {}
+              f:schedulerName: {}
+              f:securityContext: {}
+              f:serviceAccount: {}
+              f:serviceAccountName: {}
+              f:terminationGracePeriodSeconds: {}
+        f:status:
+          f:availableReplicas: {}
+          f:fullyLabeledReplicas: {}
+          f:observedGeneration: {}
+          f:readyReplicas: {}
+          f:replicas: {}
+      manager: kube-controller-manager
+      operation: Update
+      time: "2021-07-23T17:01:26Z"
+    name: apptest-5bldoukc-dashboard-64c969b98
+    namespace: apptest-5bldoukc
+    ownerReferences:
+    - apiVersion: apps/v1
+      blockOwnerDeletion: true
+      controller: true
+      kind: Deployment
+      name: apptest-5bldoukc-dashboard
+      uid: 59d3716d-3f52-40db-8d41-1ce0038e1f75
+    resourceVersion: "65747930"
+    selfLink: /apis/apps/v1/namespaces/apptest-5bldoukc/replicasets/apptest-5bldoukc-dashboard-64c969b98
+    uid: 004556bc-7b61-4eee-9e15-41d2fd55f22b
+  spec:
+    replicas: 1
+    selector:
+      matchLabels:
+        app.kubernetes.io/instance: apptest-5bldoukc
+        app.kubernetes.io/name: dashboard
+        pod-template-hash: 64c969b98
+    template:
+      metadata:
+        creationTimestamp: null
+        labels:
+          app.kubernetes.io/instance: apptest-5bldoukc
+          app.kubernetes.io/name: dashboard
+          pod-template-hash: 64c969b98
+      spec:
+        containers:
+        - image: gcr.io/plainsight-public/images/dashboard:1.0.0
+          imagePullPolicy: IfNotPresent
+          livenessProbe:
+            failureThreshold: 3
+            httpGet:
+              path: /
+              port: http
+              scheme: HTTP
+            periodSeconds: 10
+            successThreshold: 1
+            timeoutSeconds: 1
+          name: dashboard
+          ports:
+          - containerPort: 80
+            name: http
+            protocol: TCP
+          readinessProbe:
+            failureThreshold: 3
+            httpGet:
+              path: /
+              port: http
+              scheme: HTTP
+            periodSeconds: 10
+            successThreshold: 1
+            timeoutSeconds: 1
+          resources: {}
+          securityContext: {}
+          terminationMessagePath: /dev/termination-log
+          terminationMessagePolicy: File
+        dnsPolicy: ClusterFirst
+        restartPolicy: Always
+        schedulerName: default-scheduler
+        securityContext: {}
+        serviceAccount: apptest-5bldoukc-dashboard
+        serviceAccountName: apptest-5bldoukc-dashboard
+        terminationGracePeriodSeconds: 30
+  status:
+    availableReplicas: 1
+    fullyLabeledReplicas: 1
+    observedGeneration: 1
+    readyReplicas: 1
+    replicas: 1
+- apiVersion: batch/v1
+  kind: Job
+  metadata:
+    annotations:
+      kubectl.kubernetes.io/last-applied-configuration: |
+        {"apiVersion":"batch/v1","kind":"Job","metadata":{"annotations":{},"labels":{"app.kubernetes.io/component":"deployer.marketplace.cloud.google.com","app.kubernetes.io/name":"apptest-5bldoukc","marketplace.cloud.google.com/deployer":"Main"},"name":"apptest-5bldoukc-deployer","namespace":"apptest-5bldoukc","ownerReferences":[{"apiVersion":"app.k8s.io/v1beta1","blockOwnerDeletion":true,"kind":"Application","name":"apptest-5bldoukc","uid":"dbf10b50-bff4-4a93-ab27-d579ddd52c8d"}]},"spec":{"backoffLimit":0,"template":{"metadata":{"annotations":{"sidecar.istio.io/inject":"false"}},"spec":{"containers":[{"command":["/bin/deploy_with_tests.sh"],"image":"gcr.io/plainsight-public/images/deployer:1.0","imagePullPolicy":"Always","name":"deployer","resources":{"requests":{"cpu":"100m","memory":"100Mi"}},"volumeMounts":[{"mountPath":"/data/values.yaml","name":"config-volume","readOnly":true,"subPath":"values.yaml"}]}],"restartPolicy":"Never","serviceAccountName":"apptest-5bldoukc-deployer-sa","volumes":[{"name":"config-volume","secret":{"secretName":"apptest-5bldoukc-deployer-config"}}]}}}}
+    creationTimestamp: "2021-07-23T17:01:16Z"
+    labels:
+      app.kubernetes.io/component: deployer.marketplace.cloud.google.com
+      app.kubernetes.io/name: apptest-5bldoukc
+      marketplace.cloud.google.com/deployer: Main
+    managedFields:
+    - apiVersion: batch/v1
+      fieldsType: FieldsV1
+      fieldsV1:
+        f:metadata:
+          f:annotations:
+            .: {}
+            f:kubectl.kubernetes.io/last-applied-configuration: {}
+          f:labels:
+            .: {}
+            f:app.kubernetes.io/component: {}
+            f:app.kubernetes.io/name: {}
+            f:marketplace.cloud.google.com/deployer: {}
+          f:ownerReferences:
+            .: {}
+            k:{"uid":"dbf10b50-bff4-4a93-ab27-d579ddd52c8d"}:
+              .: {}
+              f:apiVersion: {}
+              f:blockOwnerDeletion: {}
+              f:kind: {}
+              f:name: {}
+              f:uid: {}
+        f:spec:
+          f:backoffLimit: {}
+          f:completions: {}
+          f:parallelism: {}
+          f:template:
+            f:metadata:
+              f:annotations:
+                .: {}
+                f:sidecar.istio.io/inject: {}
+            f:spec:
+              f:containers:
+                k:{"name":"deployer"}:
+                  .: {}
+                  f:command: {}
+                  f:image: {}
+                  f:imagePullPolicy: {}
+                  f:name: {}
+                  f:resources:
+                    .: {}
+                    f:requests:
+                      .: {}
+                      f:cpu: {}
+                      f:memory: {}
+                  f:terminationMessagePath: {}
+                  f:terminationMessagePolicy: {}
+                  f:volumeMounts:
+                    .: {}
+                    k:{"mountPath":"/data/values.yaml"}:
+                      .: {}
+                      f:mountPath: {}
+                      f:name: {}
+                      f:readOnly: {}
+                      f:subPath: {}
+              f:dnsPolicy: {}
+              f:restartPolicy: {}
+              f:schedulerName: {}
+              f:securityContext: {}
+              f:serviceAccount: {}
+              f:serviceAccountName: {}
+              f:terminationGracePeriodSeconds: {}
+              f:volumes:
+                .: {}
+                k:{"name":"config-volume"}:
+                  .: {}
+                  f:name: {}
+                  f:secret:
+                    .: {}
+                    f:defaultMode: {}
+                    f:secretName: {}
+      manager: kubectl
+      operation: Update
+      time: "2021-07-23T17:01:16Z"
+    - apiVersion: batch/v1
+      fieldsType: FieldsV1
+      fieldsV1:
+        f:status:
+          f:conditions:
+            .: {}
+            k:{"type":"Failed"}:
+              .: {}
+              f:lastProbeTime: {}
+              f:lastTransitionTime: {}
+              f:message: {}
+              f:reason: {}
+              f:status: {}
+              f:type: {}
+          f:failed: {}
+          f:startTime: {}
+      manager: kube-controller-manager
+      operation: Update
+      time: "2021-07-23T17:01:23Z"
+    name: apptest-5bldoukc-deployer
+    namespace: apptest-5bldoukc
+    ownerReferences:
+    - apiVersion: app.k8s.io/v1beta1
+      blockOwnerDeletion: true
+      kind: Application
+      name: apptest-5bldoukc
+      uid: dbf10b50-bff4-4a93-ab27-d579ddd52c8d
+    resourceVersion: "65747897"
+    selfLink: /apis/batch/v1/namespaces/apptest-5bldoukc/jobs/apptest-5bldoukc-deployer
+    uid: 6bd0a630-a138-44b7-a71e-dec3636c77ca
+  spec:
+    backoffLimit: 0
+    completions: 1
+    parallelism: 1
+    selector:
+      matchLabels:
+        controller-uid: 6bd0a630-a138-44b7-a71e-dec3636c77ca
+    template:
+      metadata:
+        annotations:
+          sidecar.istio.io/inject: "false"
+        creationTimestamp: null
+        labels:
+          controller-uid: 6bd0a630-a138-44b7-a71e-dec3636c77ca
+          job-name: apptest-5bldoukc-deployer
+      spec:
+        containers:
+        - command:
+          - /bin/deploy_with_tests.sh
+          image: gcr.io/plainsight-public/images/deployer:1.0
+          imagePullPolicy: Always
+          name: deployer
+          resources:
+            requests:
+              cpu: 100m
+              memory: 100Mi
+          terminationMessagePath: /dev/termination-log
+          terminationMessagePolicy: File
+          volumeMounts:
+          - mountPath: /data/values.yaml
+            name: config-volume
+            readOnly: true
+            subPath: values.yaml
+        dnsPolicy: ClusterFirst
+        restartPolicy: Never
+        schedulerName: default-scheduler
+        securityContext: {}
+        serviceAccount: apptest-5bldoukc-deployer-sa
+        serviceAccountName: apptest-5bldoukc-deployer-sa
+        terminationGracePeriodSeconds: 30
+        volumes:
+        - name: config-volume
+          secret:
+            defaultMode: 420
+            secretName: apptest-5bldoukc-deployer-config
+  status:
+    conditions:
+    - lastProbeTime: "2021-07-23T17:01:23Z"
+      lastTransitionTime: "2021-07-23T17:01:23Z"
+      message: Job has reached the specified backoff limit
+      reason: BackoffLimitExceeded
+      status: "True"
+      type: Failed
+    failed: 1
+    startTime: "2021-07-23T17:01:16Z"
+- apiVersion: batch/v1
+  kind: Job
+  metadata:
+    annotations:
+      kubectl.kubernetes.io/last-applied-configuration: |
+        {"apiVersion":"batch/v1","kind":"Job","metadata":{"annotations":{},"labels":{"app.kubernetes.io/instance":"apptest-5bldoukc","app.kubernetes.io/managed-by":"Helm","app.kubernetes.io/name":"migrator","app.kubernetes.io/version":"1.0","helm.sh/chart":"migrator-1.0.0"},"name":"apptest-5bldoukc-migrator","namespace":"apptest-5bldoukc","ownerReferences":[{"apiVersion":"app.k8s.io/v1beta1","blockOwnerDeletion":true,"kind":"Application","name":"apptest-5bldoukc","uid":"dbf10b50-bff4-4a93-ab27-d579ddd52c8d"}]},"spec":{"backoffLimit":5,"completions":1,"parallelism":1,"template":{"metadata":{"labels":{"app.kubernetes.io/instance":"apptest-5bldoukc","app.kubernetes.io/managed-by":"Helm","app.kubernetes.io/name":"migrator","app.kubernetes.io/version":"1.0","helm.sh/chart":"migrator-1.0.0"}},"spec":{"containers":[{"command":["/bin/migrator"],"env":[{"name":"SENSE_PLEASE_DONT_DIE","value":"true"}],"image":"gcr.io/plainsight-public/images/migrator:1.0.0","imagePullPolicy":"IfNotPresent","name":"migrator","resources":{},"terminationMessagePath":"/dev/termination-log","terminationMessagePolicy":"File"}],"dnsPolicy":"ClusterFirst","restartPolicy":"Never","securityContext":{},"terminationGracePeriodSeconds":30}}}}
+    creationTimestamp: "2021-07-23T17:01:21Z"
+    labels:
+      app.kubernetes.io/instance: apptest-5bldoukc
+      app.kubernetes.io/managed-by: Helm
+      app.kubernetes.io/name: migrator
+      app.kubernetes.io/version: "1.0"
+      helm.sh/chart: migrator-1.0.0
+    managedFields:
+    - apiVersion: batch/v1
+      fieldsType: FieldsV1
+      fieldsV1:
+        f:metadata:
+          f:annotations:
+            .: {}
+            f:kubectl.kubernetes.io/last-applied-configuration: {}
+          f:labels:
+            .: {}
+            f:app.kubernetes.io/instance: {}
+            f:app.kubernetes.io/managed-by: {}
+            f:app.kubernetes.io/name: {}
+            f:app.kubernetes.io/version: {}
+            f:helm.sh/chart: {}
+          f:ownerReferences:
+            .: {}
+            k:{"uid":"dbf10b50-bff4-4a93-ab27-d579ddd52c8d"}:
+              .: {}
+              f:apiVersion: {}
+              f:blockOwnerDeletion: {}
+              f:kind: {}
+              f:name: {}
+              f:uid: {}
+        f:spec:
+          f:backoffLimit: {}
+          f:completions: {}
+          f:parallelism: {}
+          f:template:
+            f:metadata:
+              f:labels:
+                .: {}
+                f:app.kubernetes.io/instance: {}
+                f:app.kubernetes.io/managed-by: {}
+                f:app.kubernetes.io/name: {}
+                f:app.kubernetes.io/version: {}
+                f:helm.sh/chart: {}
+            f:spec:
+              f:containers:
+                k:{"name":"migrator"}:
+                  .: {}
+                  f:command: {}
+                  f:env:
+                    .: {}
+                    k:{"name":"SENSE_PLEASE_DONT_DIE"}:
+                      .: {}
+                      f:name: {}
+                      f:value: {}
+                  f:image: {}
+                  f:imagePullPolicy: {}
+                  f:name: {}
+                  f:resources: {}
+                  f:terminationMessagePath: {}
+                  f:terminationMessagePolicy: {}
+              f:dnsPolicy: {}
+              f:restartPolicy: {}
+              f:schedulerName: {}
+              f:securityContext: {}
+              f:terminationGracePeriodSeconds: {}
+      manager: kubectl
+      operation: Update
+      time: "2021-07-23T17:01:21Z"
+    - apiVersion: batch/v1
+      fieldsType: FieldsV1
+      fieldsV1:
+        f:status:
+          f:active: {}
+          f:startTime: {}
+      manager: kube-controller-manager
+      operation: Update
+      time: "2021-07-23T17:01:22Z"
+    name: apptest-5bldoukc-migrator
+    namespace: apptest-5bldoukc
+    ownerReferences:
+    - apiVersion: app.k8s.io/v1beta1
+      blockOwnerDeletion: true
+      kind: Application
+      name: apptest-5bldoukc
+      uid: dbf10b50-bff4-4a93-ab27-d579ddd52c8d
+    resourceVersion: "65747877"
+    selfLink: /apis/batch/v1/namespaces/apptest-5bldoukc/jobs/apptest-5bldoukc-migrator
+    uid: 8c7967ef-53b1-4a9e-82e5-20368b735d02
+  spec:
+    backoffLimit: 5
+    completions: 1
+    parallelism: 1
+    selector:
+      matchLabels:
+        controller-uid: 8c7967ef-53b1-4a9e-82e5-20368b735d02
+    template:
+      metadata:
+        creationTimestamp: null
+        labels:
+          app.kubernetes.io/instance: apptest-5bldoukc
+          app.kubernetes.io/managed-by: Helm
+          app.kubernetes.io/name: migrator
+          app.kubernetes.io/version: "1.0"
+          controller-uid: 8c7967ef-53b1-4a9e-82e5-20368b735d02
+          helm.sh/chart: migrator-1.0.0
+          job-name: apptest-5bldoukc-migrator
+      spec:
+        containers:
+        - command:
+          - /bin/migrator
+          env:
+          - name: SENSE_PLEASE_DONT_DIE
+            value: "true"
+          image: gcr.io/plainsight-public/images/migrator:1.0.0
+          imagePullPolicy: IfNotPresent
+          name: migrator
+          resources: {}
+          terminationMessagePath: /dev/termination-log
+          terminationMessagePolicy: File
+        dnsPolicy: ClusterFirst
+        restartPolicy: Never
+        schedulerName: default-scheduler
+        securityContext: {}
+        terminationGracePeriodSeconds: 30
+  status:
+    active: 1
+    startTime: "2021-07-23T17:01:21Z"
+- apiVersion: app.k8s.io/v1beta1
+  kind: Application
+  metadata:
+    annotations:
+      kubectl.kubernetes.io/last-applied-configuration: |
+        {"apiVersion":"app.k8s.io/v1beta1","kind":"Application","metadata":{"annotations":{"kubernetes-engine.cloud.google.com/icon":"data:image/png;base64,","marketplace.cloud.google.com/deploy-info":"{\"partner_id\": \"plainsight-public\", \"product_id\": \"plainsight-k8s-public\", \"partner_name\": \"Plainsight\"}"},"labels":{"app.kubernetes.io/name":"apptest-5bldoukc"},"name":"apptest-5bldoukc","namespace":"apptest-5bldoukc"},"spec":{"componentKinds":[{"group":"apps/v1","kind":"Deployment"},{"group":"v1","kind":"Service"},{"group":"v1","kind":"ConfigMap"},{"group":"v1","kind":"ServiceAccount"},{"group":"batch/v1","kind":"Job"}],"descriptor":{"description":"Plainsight","links":[{"description":"User Guide: Google Click to Deploy Plainsight","url":"https://github.com/sixgill/plainsight-marketplace-deployer/README.md"}],"maintainers":[{"name":"Plainsight","url":"https://plainsight.ai"}],"type":"Plainsight","version":"1.0.0"},"info":null,"selector":{"matchLabels":{"app.kubernetes.io/name":"apptest-5bldoukc"}}}}
+      kubernetes-engine.cloud.google.com/icon: data:image/png;base64,
+      marketplace.cloud.google.com/deploy-info: '{"partner_id": "plainsight-public",
+        "product_id": "plainsight-k8s-public", "partner_name": "Plainsight"}'
+    creationTimestamp: "2021-07-23T17:01:13Z"
+    generation: 3
+    labels:
+      app.kubernetes.io/name: apptest-5bldoukc
+    managedFields:
+    - apiVersion: app.k8s.io/v1beta1
+      fieldsType: FieldsV1
+      fieldsV1:
+        f:metadata:
+          f:annotations:
+            .: {}
+            f:kubectl.kubernetes.io/last-applied-configuration: {}
+            f:kubernetes-engine.cloud.google.com/icon: {}
+            f:marketplace.cloud.google.com/deploy-info: {}
+          f:labels:
+            .: {}
+            f:app.kubernetes.io/name: {}
+        f:spec:
+          .: {}
+          f:assemblyPhase: {}
+          f:componentKinds: {}
+          f:descriptor:
+            .: {}
+            f:description: {}
+            f:links: {}
+            f:maintainers: {}
+            f:type: {}
+            f:version: {}
+          f:selector:
+            .: {}
+            f:matchLabels:
+              .: {}
+              f:app.kubernetes.io/name: {}
+      manager: kubectl
+      operation: Update
+      time: "2021-07-23T17:01:22Z"
+    name: apptest-5bldoukc
+    namespace: apptest-5bldoukc
+    resourceVersion: "65747889"
+    selfLink: /apis/app.k8s.io/v1beta1/namespaces/apptest-5bldoukc/applications/apptest-5bldoukc
+    uid: dbf10b50-bff4-4a93-ab27-d579ddd52c8d
+  spec:
+    assemblyPhase: Failed
+    componentKinds:
+    - group: apps/v1
+      kind: Deployment
+    - group: v1
+      kind: Service
+    - group: v1
+      kind: ConfigMap
+    - group: v1
+      kind: ServiceAccount
+    - group: batch/v1
+      kind: Job
+    descriptor:
+      description: Plainsight
+      links:
+      - description: 'User Guide: Google Click to Deploy Plainsight'
+        url: https://github.com/sixgill/plainsight-marketplace-deployer/README.md
+      maintainers:
+      - name: Plainsight
+        url: https://plainsight.ai
+      type: Plainsight
+      version: 1.0.0
+    selector:
+      matchLabels:
+        app.kubernetes.io/name: apptest-5bldoukc
+kind: List
+metadata:
+  resourceVersion: ""
+  selfLink: ""
+Using /opt/kubectl/1.18/kubectl (server=1.19)
+namespace "apptest-5bldoukc" deleted
+=== ERROR SUMMARY ===
+ERROR Deployer failed
+
+Error events found in namespace "apptest-5bldoukc"
+LAST SEEN   TYPE      REASON                 OBJECT                          MESSAGE
+3s          Warning   BackoffLimitExceeded   job/apptest-5bldoukc-deployer   Job has reached the specified backoff limit
+=====================
+
+=== VERIFICATION STATUS ===
+FAILED
+===========================

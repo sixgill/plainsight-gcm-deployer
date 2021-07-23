@@ -14,31 +14,31 @@ x-google-marketplace:
   images:
     worker:
       properties:
-        workers.image.repo:
+        workers.image.repository:
           type: REPO_WITH_REGISTRY
         workers.image.tag:
           type: TAG
     api:
       properties:
-        api.image.repo:
+        api.image.repository:
           type: REPO_WITH_REGISTRY
         api.image.tag:
           type: TAG
     dashboard:
       properties:
-        dashboard.image.repo:
+        dashboard.image.repository:
           type: REPO_WITH_REGISTRY
         dashboard.image.tag:
           type: TAG
     billing:
       properties:
-        billing.image.repo:
+        billing.image.repository:
           type: REPO_WITH_REGISTRY
         billing.image.tag:
           type: TAG
     migrator:
       properties:
-        migrator.image.repo:
+        migrator.image.repository:
           type: REPO_WITH_REGISTRY
         migrator.image.tag:
           type: TAG
@@ -52,6 +52,18 @@ properties:
     type: string
     x-google-marketplace:
       type: NAMESPACE
+  gcp.project:
+    type: string
+    default: "myProject"
+  gcp.region:
+    type: string
+    default: "my-region1"
+  gcp.zone:
+    type: string
+    default: "my-region1-a"
+  gcp.verify:
+    type: boolean
+    default: true
 
 required:
 - name

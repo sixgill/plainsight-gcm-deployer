@@ -8,7 +8,7 @@ metadata:
     app.kubernetes.io/name: {{ .fullnameOverride }}
     helm.sh/chart: "{{ $.Chart.Name }}-{{ $.Chart.Version }}"
     app.kubernetes.io/instance: {{ $.Release.Name }}
-    app.kubernetes.io/version: {{ $.Chart.AppVersion }}
+    app.kubernetes.io/version: {{ $.Chart.AppVersion | quote }}
     app.kubernetes.io/managed-by: {{ $.Release.Service }}
 spec:
   replicas: {{ $.Values.replicaCount }}
@@ -16,7 +16,7 @@ spec:
     matchLabels:
       app.kubernetes.io/name: {{ .fullnameOverride }}
       app.kubernetes.io/instance: {{ $.Release.Name }}
-      app.kubernetes.io/version: {{ $.Chart.AppVersion }}
+      app.kubernetes.io/version: {{ $.Chart.AppVersion | quote }}
   template:
     metadata:
       {{- with .podAnnotations }}
@@ -26,7 +26,7 @@ spec:
       labels:
         app.kubernetes.io/name: {{ .fullnameOverride }}
         app.kubernetes.io/instance: {{ $.Release.Name }}
-        app.kubernetes.io/version: {{ $.Chart.AppVersion }}
+        app.kubernetes.io/version: {{ $.Chart.AppVersion | quote }}
     spec:
       {{- with $.Values.imagePullSecrets }}
       imagePullSecrets:
@@ -70,9 +70,6 @@ spec:
           env:
           - name: SENSE_PLEASE_DONT_DIE
             value: "true"
-          envFrom:
-          - configMapRef:
-              name: workers
           env:
           - name: PUBSUB_TOPIC
             value: {{ .pubsubTopic }}

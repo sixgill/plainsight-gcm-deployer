@@ -11,6 +11,8 @@ image:
   tag: ""
 
 imagePullSecrets: []
+nameOverride: ""
+fullnameOverride: ""
 
 workers:
   - nameOverride: clip-worker
@@ -26,7 +28,7 @@ workers:
     resources:
       requests:
         cpu: 200m
-        memory: 250mi
+        memory: 250Mi
       limits:
         cpu: 500m
         memory: 1Gi
@@ -46,7 +48,7 @@ workers:
     resources:
       requests:
         cpu: 200m
-        memory: 250mi
+        memory: 250Mi
       limits:
         cpu: 500m
         memory: 1Gi
@@ -66,7 +68,7 @@ workers:
     resources:
       requests:
         cpu: 200m
-        memory: 250mi
+        memory: 250Mi
       limits:
         cpu: 500m
         memory: 1Gi
@@ -86,7 +88,7 @@ workers:
     resources:
       requests:
         cpu: 200m
-        memory: 250mi
+        memory: 250Mi
       limits:
         cpu: 500m
         memory: 1Gi
@@ -106,7 +108,7 @@ workers:
     resources:
       requests:
         cpu: 200m
-        memory: 250mi
+        memory: 250Mi
       limits:
         cpu: 500m
         memory: 1Gi
@@ -126,7 +128,7 @@ workers:
     resources:
       requests:
         cpu: 200m
-        memory: 250mi
+        memory: 250Mi
       limits:
         cpu: 500m
         memory: 1Gi
@@ -146,7 +148,7 @@ workers:
     resources:
       requests:
         cpu: 200m
-        memory: 250mi
+        memory: 250Mi
       limits:
         cpu: 500m
         memory: 1Gi
@@ -166,7 +168,7 @@ workers:
     resources:
       requests:
         cpu: 200m
-        memory: 250mi
+        memory: 250Mi
       limits:
         cpu: 500m
         memory: 1Gi
@@ -186,7 +188,7 @@ workers:
     resources:
       requests:
         cpu: 200m
-        memory: 250mi
+        memory: 250Mi
       limits:
         cpu: 500m
         memory: 1Gi
@@ -206,7 +208,7 @@ workers:
     resources:
       requests:
         cpu: 200m
-        memory: 250mi
+        memory: 250Mi
       limits:
         cpu: 500m
         memory: 1Gi
@@ -226,7 +228,7 @@ workers:
     resources:
       requests:
         cpu: 200m
-        memory: 250mi
+        memory: 250Mi
       limits:
         cpu: 500m
         memory: 1Gi

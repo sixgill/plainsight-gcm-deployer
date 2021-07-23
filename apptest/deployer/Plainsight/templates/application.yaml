@@ -7,7 +7,7 @@ metadata:
   annotations:
     kubernetes-engine.cloud.google.com/icon: >-
       data:image/png;base64,{{ .Files.Get "logo.png" | b64enc }}
-    marketplace.cloud.google.com/deploy-info: '{"partner_id": "click-to-deploy-containers", "product_id": "wordpress", "partner_name": "Google Click to Deploy"}'
+    marketplace.cloud.google.com/deploy-info: '{"partner_id": "plainsight-public", "product_id": "plainsight-k8s-public", "partner_name": "Plainsight"}'
   labels:
     app.kubernetes.io/name: "{{ .Release.Name }}"
 spec:
@@ -22,18 +22,21 @@ spec:
     links:
     - description: 'User Guide: Google Click to Deploy Plainsight'
       url: https://github.com/sixgill/plainsight-marketplace-deployer/README.md
-  info:
   selector:
     matchLabels:
       app.kubernetes.io/name: "{{ .Release.Name }}"
   componentKinds:
   - group: apps/v1
     kind: Deployment
-  - group: v1
-    kind: Secret
+  
   - group: v1
     kind: Service
-  - group: networking.k8s.io
-    kind: Ingress
+  
   - group: v1
     kind: ConfigMap
+  
+  - group: v1
+    kind: ServiceAccount
+  
+  - group: batch/v1
+    kind: Job
