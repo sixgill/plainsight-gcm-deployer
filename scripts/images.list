@@ -2,4 +2,5 @@ gcr.io/sense-artifacts/marketplace/api:latest
 gcr.io/sense-artifacts/marketplace/worker:latest
 gcr.io/sense-artifacts/marketplace/migrator:latest
 gcr.io/sense-artifacts/marketplace/dashboard:latest
+gcr.io/sense-artifacts/marketplace/templates:latest
 gcr.io/sense-artifacts/sense-billing-service:latest

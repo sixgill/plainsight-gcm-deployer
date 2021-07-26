@@ -42,7 +42,12 @@ x-google-marketplace:
           type: REPO_WITH_REGISTRY
         migrator.image.tag:
           type: TAG
-
+    templates:
+      properties:
+        templates.image.repository:
+          type: REPO_WITH_REGISTRY
+        templates.image.tag:
+          type: TAG
 properties:
   name:
     type: string
