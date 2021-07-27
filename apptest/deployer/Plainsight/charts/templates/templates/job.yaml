@@ -18,10 +18,8 @@ spec:
         {{- include "templates.labels" . | nindent 8 }}
     spec:
       containers:
-      - command:
-        - /bin/templates
         env:
-        - name: SENSE_PLEASE_DONT_DIE
+        - name: PLEASE_DONT_DIE
           value: "true"
         image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
         imagePullPolicy: {{ .Values.image.pullPolicy }}
