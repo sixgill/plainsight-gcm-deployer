@@ -1,11 +1,11 @@
-# Default values for migrator.
+# Default values for templates.
 # This is a YAML-formatted file.
 # Declare variables to be passed into your templates.
 
 replicaCount: 1
 
 image:
-  repository: gcr.io/plainsight-public/images/migrator
+  repository: gcr.io/plainsight-public/images/templates
   pullPolicy: IfNotPresent
   # Overrides the image tag whose default is the chart appVersion.
   tag: ""
