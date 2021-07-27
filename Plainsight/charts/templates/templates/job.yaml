@@ -1,9 +1,9 @@
 apiVersion: batch/v1
 kind: Job
 metadata:
-  name: {{ include "migrator.fullname" . }}
+  name: {{ include "templates.fullname" . }}
   labels:
-    {{- include "migrator.labels" . | nindent 4 }}
+    {{- include "templates.labels" . | nindent 4 }}
   {{- with .Values.podAnnotations }}
   annotations:
     {{- toYaml . | nindent 4 }}
@@ -15,11 +15,11 @@ spec:
   template:
     metadata:
       labels:
-        {{- include "migrator.labels" . | nindent 8 }}
+        {{- include "templates.labels" . | nindent 8 }}
     spec:
       containers:
       - command:
-        - /bin/migrator
+        - /bin/templates
         env:
         - name: SENSE_PLEASE_DONT_DIE
           value: "true"
