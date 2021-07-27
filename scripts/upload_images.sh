@@ -10,7 +10,7 @@ do
     then
         svc="billing"
     fi
-    newsvc="gcr.io/plainsight-public/images/$svc:1.0.0"
+    newsvc="gcr.io/plainsight-public/images/$svc:1.1.0"
     docker pull $line
     docker tag $line $newsvc
     docker push $newsvc
